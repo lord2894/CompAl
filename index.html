@@ -33,13 +33,13 @@
 <body>
 <script src="http://d3js.org/d3.v3.min.js"></script>
 <script>
-    function page(){
+function page(){
     d3.select("body").append("div").attr('id', 'navigation_panel');
     d3.select("#navigation_panel").append("input").attr('type', 'text').attr('id', 'equalText'); //.select('#equalText').value="Set equal here"
     d3.select("#navigation_panel").append("button").attr('type', 'button').attr('onclick', 'generateTree()').text('Generate tree from equals');
     var margin = {top: 20, right: 120, bottom: 20, left: 120},
-            width = 1000 - margin.right - margin.left,
-            height = 700 - margin.top - margin.bottom;
+            width = 1500 - margin.right - margin.left,
+            height = 1500 - margin.top - margin.bottom;
     var tree = d3.layout.tree()
             .size([height,width]);
     var diagonal = d3.svg.diagonal()
@@ -62,13 +62,13 @@
         return regexp.test(symbol);
     }
     checkBinary = function (symbol) {
-            symbol = symbol.toString();
-            regexp = new RegExp("[\\^\\+\\-\\*\\/]+");
-            return regexp.test(symbol);
-        }
+        symbol = symbol.toString();
+        regexp = new RegExp("[\\^\\+\\-\\*\\/]+");
+        return regexp.test(symbol);
+    }
     checkUnary = function (symbol) {
-            return false;
-        }
+        return false;
+    }
     checkPriority = function (op_1, op_2) {
         var op1pr, op2pr;
         if (op_1 == '^') op1pr = 1;
@@ -127,28 +127,28 @@
         cur_sim = cur_pos - 1;
         if(checkBinary(equalSTR[cur_pos]))
         {
-           while (operands != 2) {
-               if (cur_sim >= 0 && equalSTR[cur_sim] >= '0' && equalSTR[cur_sim] <= '9') {
-                   var k = 0;
-                   var numSTR = "";
-                   while (cur_sim - k >= 0 && equalSTR[cur_sim - k] != '#') {
-                       numSTR += equalSTR[cur_sim - k];
-                       k++;
-                   }
-                   numSTR = numSTR.split("").reverse().join("");
-                   data.push({"name": numSTR, "parent": equalSTR[cur_pos]});
-                   operands++;
-                   cur_sim=cur_sim - k - 1;
-                   continue;
-               }
-               else if (cur_sim >= 0 && checkOperation(equalSTR[cur_sim]))
-               {
-                   data.push({"name": equalSTR[cur_sim], "parent": equalSTR[cur_pos]});
-                   operands++;
-                   recursiveData(cur_sim,equalSTR);
-                   continue;
-               }
-           }
+            while (operands != 2) {
+                if (cur_sim >= 0 && equalSTR[cur_sim] >= '0' && equalSTR[cur_sim] <= '9') {
+                    var k = 0;
+                    var numSTR = "";
+                    while (cur_sim - k >= 0 && equalSTR[cur_sim - k] != '#') {
+                        numSTR += equalSTR[cur_sim - k];
+                        k++;
+                    }
+                    numSTR = numSTR.split("").reverse().join("");
+                    data.push({"name": numSTR, "parent": equalSTR[cur_pos], "parentID": cur_pos, "nameID": cur_sim-k});
+                    operands++;
+                    cur_sim=cur_sim - k - 1;
+                    continue;
+                }
+                else if (cur_sim >= 0 && checkOperation(equalSTR[cur_sim]))
+                {
+                    data.push({"name": equalSTR[cur_sim], "parent": equalSTR[cur_pos], "parentID": cur_pos, "nameID": cur_sim});
+                    operands++;
+                    recursiveData(cur_sim,equalSTR);
+                    continue;
+                }
+            }
         }
         else if(checkUnary(equalSTR[cur_pos]))
         {
@@ -161,14 +161,14 @@
                         k++;
                     }
                     numSTR = numSTR.split("").reverse().join("");
-                    data.push({"name": numSTR, "parent": equalSTR[cur_pos]});
+                    data.push({"name": numSTR, "parent": equalSTR[cur_pos], "parentID": cur_pos, "nameID": cur_sim-k});
                     cur_sim=cur_sim - k - 1;
                     operands++;
                     continue;
                 }
                 else if (cur_sim >= 0 && checkOperation(equalSTR[cur_sim]))
                 {
-                    data.push({"name": equalSTR[cur_sim], "parent": equalSTR[cur_pos]});
+                    data.push({"name": equalSTR[cur_sim], "parent": equalSTR[cur_pos], "parentID": cur_pos, "nameID": cur_sim});
                     operands++;
                     recursiveData(cur_sim,equalSTR);
                     continue;
@@ -181,18 +181,18 @@
         ];
         var equalSTR = document.getElementById("equalText").value;
         equalSTR = polishNotation(equalSTR);
-        data.push({"name": equalSTR[equalSTR.length-1], "parent": "start"});
+        data.push({"name": equalSTR[equalSTR.length-1], "parent": "start", "parentID": -1, "nameID": equalSTR.length-1});
         //var newSTR = equalSTR.split("").reverse().join("");
         current_position = equalSTR.length - 1;
         recursiveData(equalSTR.length - 1, equalSTR);
         dataMap = data.reduce(function (map, node) {
-            map[node.name] = node;
+            map[node.name+node.nameID] = node;
             return map;
         }, {});
         treeData = [];
         data.forEach(function (node) {
             // add to parent
-            var parent = dataMap[node.parent];
+            var parent = dataMap[node.parent+node.parentID];
             if (parent) {
                 // create child array if it doesn't exist
                 (parent.children || (parent.children = []))
@@ -258,7 +258,7 @@
                 .attr("d", diagonal);
 
     }
-    }
-    var page = page();
+}
+var page = page();
 </script>
 </body>
