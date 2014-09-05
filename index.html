@@ -2,46 +2,17 @@
 <meta charset="utf-8">
 <style>
     body {
-    / / З а г о т о в к а д л я т е л а с а й т а width : 960 px;
+        width: 960px;
         margin: 10px auto;
     }
 
-    .link {
-        fill: none;
-        stroke: #ccc;
-        stroke-width: 2px;
-    }
-
-
-    .incRect {
-        stroke: grey;
-        shape-rendering: crispEdges;
-    }
-
-    #navdiv {
+    #navigation_panel {
         background: #555;
-    }
-
-    #treesvg {
-        border: 1px solid grey;
-    }
-
-    #labelpos {
-        color: white;
     }
 
     #navdiv button {
         vertical-align: middle;
     }
-
-    #g_labels text {
-        text-anchor: middle;
-    }
-
-    #g_elabels text {
-        text-anchor: middle;
-        fill: red;
-        font-weight: bold;
 
     .node circle {
         fill: #fff;
@@ -49,68 +20,88 @@
         stroke-width: 3px;
     }
 
-    .node text { font: 12px sans-serif; }
+    .node text {
+        font: 12px sans-serif;
+    }
 
     .link {
         fill: none;
         stroke: #ccc;
         stroke-width: 2px;
     }
-    }
 </style>
 <body>
 <script src="http://d3js.org/d3.v3.min.js"></script>
 <script>
-
-var current_position = 0;
-    function tree() {
-
-        var svgW = 958, svgH = 460, vRad = 12, tree = {cx: 300, cy: 30, w: 40, h: 70};
-        tree.vis = {v: 0, l: '?', p: {x: tree.cx, y: tree.cy}, c: []};
-        tree.size = 1;
-        tree.glabels = [];
-        tree.incMatx = [];
-        tree.incX = 500, tree.incY = 30, tree.incS = 20;
-
-        checkOperation = function (symbol) {
+    function page(){
+    d3.select("body").append("div").attr('id', 'navigation_panel');
+    d3.select("#navigation_panel").append("input").attr('type', 'text').attr('id', 'equalText'); //.select('#equalText').value="Set equal here"
+    d3.select("#navigation_panel").append("button").attr('type', 'button').attr('onclick', 'generateTree()').text('Generate tree from equals');
+    var margin = {top: 20, right: 120, bottom: 20, left: 120},
+            width = 960 - margin.right - margin.left,
+            height = 500 - margin.top - margin.bottom;
+    var tree = d3.layout.tree()
+            .size([height, width]);
+    var diagonal = d3.svg.diagonal()
+            .projection(function (d) {
+                return [d.y, d.x];
+            });
+    var svg = d3.select("body").append("svg")
+            .attr("width", width + margin.right + margin.left)
+            .attr("height", height + margin.top + margin.bottom)
+            .append("g")
+            .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+    var cur_sim = 0;
+    var i = 0;
+    var dataMap;
+    var data;
+    var treeData;
+    checkOperation = function (symbol) {
+        symbol = symbol.toString();
+        regexp = new RegExp("[\\^\\+\\-\\*\\/]+");
+        return regexp.test(symbol);
+    }
+    checkBinary = function (symbol) {
             symbol = symbol.toString();
             regexp = new RegExp("[\\^\\+\\-\\*\\/]+");
             return regexp.test(symbol);
         }
-        checkPriority = function (op_1, op_2) {
-            var op1pr, op2pr;
-            if (op_1 == '^') op1pr = 1;
-            if (op_2 == '^') op2pr = 1;
-            if (op_1 == '*' || op_1 == '/') op1pr = 0.5;
-            if (op_2 == '*' || op_2 == '/') op2pr = 0.5;
-            if (op_1 == '+' || op_1 == '-') op1pr = 0.1;
-            if (op_2 == '+' || op_2 == '-') op2pr = 0.1;
-            //if (op_1 == '(') op_1pr = 0;
-            if (op_2 == '(') op_2pr = 0;
-            return op1pr - op2pr;
+    checkUnary = function (symbol) {
+            return false;
         }
-        polishNotation = function(equalSTR)
-        {
-            var stack = [];
-            var N = equalSTR.length;
-            var return_string = "";
-            for (var i = 0; i < N; i++) {
-                var current_symbol = equalSTR.charAt(i);
-                if ((current_symbol <= '9' && current_symbol >= '0')) {
-                    return_string += '#';
-                    while ((current_symbol <= '9' && current_symbol >= '0') || current_symbol == '.') {
-                        return_string += (current_symbol);
-                        current_symbol = equalSTR.charAt(++i);
+    checkPriority = function (op_1, op_2) {
+        var op1pr, op2pr;
+        if (op_1 == '^') op1pr = 1;
+        if (op_2 == '^') op2pr = 1;
+        if (op_1 == '*' || op_1 == '/') op1pr = 0.5;
+        if (op_2 == '*' || op_2 == '/') op2pr = 0.5;
+        if (op_1 == '+' || op_1 == '-') op1pr = 0.1;
+        if (op_2 == '+' || op_2 == '-') op2pr = 0.1;
+        //if (op_1 == '(') op_1pr = 0;
+        if (op_2 == '(') op_2pr = 0;
+        return op1pr - op2pr;
+    }
+    polishNotation = function (equalSTR) {
+        var stack = [];
+        var N = equalSTR.length;
+        var return_string = "";
+        for (var i = 0; i < N; i++) {
+            var current_symbol = equalSTR.charAt(i);
+            if ((current_symbol <= '9' && current_symbol >= '0')) {
+                return_string += '#';
+                while ((current_symbol <= '9' && current_symbol >= '0') || current_symbol == '.') {
+                    return_string += (current_symbol);
+                    current_symbol = equalSTR.charAt(++i);
+                }
+                i--;
+            } else {
+                if (current_symbol == ')') {
+                    while (current_symbol != '(') {
+                        current_symbol = stack.pop();
+                        if (current_symbol != '(')
+                            return_string += (current_symbol);
                     }
-                    i--;
-                } else {
-                    if (current_symbol == ')') {
-                        while (current_symbol != '(') {
-                            current_symbol = stack.pop();
-                            if (current_symbol != '(')
-                                return_string += (current_symbol);
-                        }
-                        //stack.pop();
+                    //stack.pop();
 //                        if (stack.length > 0) {
 //                            current_symbol = stack[stack.length - 1];
 //                            if (checkOperation(current_symbol)) {
@@ -118,159 +109,156 @@ var current_position = 0;
 //                                return_string += (current_symbol);
 //                            }
 //                        }
-                    } else if (current_symbol != '(') {
-                        while (checkPriority(current_symbol, stack[stack.length - 1]) <= 0) {
-                            return_string += (stack.pop());
-                        }
-                        stack.push(current_symbol);
-                    }   else stack.push(current_symbol);
-                }
-            }
-            while (stack.length != 0) {
-                return_string += (stack.pop());
-            }
-            return return_string;
-        }
-        recursiveData = function (i, equalSTR, data) {
-            if (checkOperation(equalSTR[i])) data.push({"name": equalSTR[i], "parent": equalSTR[current_position]});
-            if (checkOperation(current_position - 1))  recursiveData(--current_position, equalSTR, data);
-            else {
-                data.push({"name": equalSTR[current_position - 1], "parent": equalSTR[current_position]});
-                current_position--;
-            }
-            if (checkOperation(current_position - 1))  recursiveData(--current_position, equalSTR, data);
-            else {
-                data.push({"name": equalSTR[current_position - 1], "parent": equalSTR[current_position]});
-                current_position--;
+                } else if (current_symbol != '(') {
+                    while (checkPriority(current_symbol, stack[stack.length - 1]) <= 0) {
+                        return_string += (stack.pop());
+                    }
+                    stack.push(current_symbol);
+                } else stack.push(current_symbol);
             }
         }
-        generateTree = function () {
-            var data = [
-            ];
-            var equalSTR = document.getElementById("equalText").value;
-            equalSTR = polishNotation(equalSTR);
-            current_position = equalSTR.length - 1;
-            recursiveData(equalSTR.length - 1, equalSTR, data);
-            var dataMap = data.reduce(function(map, node) {
-                map[node.name] = node;
-                return map;
-            }, {});
-            var treeData = [];
-            data.forEach(function(node) {
-                // add to parent
-                var parent = dataMap[node.parent];
-                if (parent) {
-                    // create child array if it doesn't exist
-                    (parent.children || (parent.children = []))
-                        // add node to child array
-                            .push(node);
-                } else {
-                    // parent is null or missing
-                    treeData.push(node);
+        while (stack.length != 0) {
+            return_string += (stack.pop());
+        }
+        return return_string;
+    }
+    recursiveData = function (cur_pos, equalSTR) {
+        var operands = 0;
+        cur_sim = cur_pos - 1;
+        if(checkBinary(equalSTR[cur_pos]))
+        {
+           while (operands != 2) {
+               if (cur_sim >= 0 && equalSTR[cur_sim] >= '0' && equalSTR[cur_sim] <= '9') {
+                   var k = 0;
+                   var numSTR = "";
+                   while (cur_sim - k >= 0 && equalSTR[cur_sim - k] != '#') {
+                       numSTR += equalSTR[cur_sim - k];
+                       k++;
+                   }
+                   numSTR = numSTR.split("").reverse().join("");
+                   data.push({"name": numSTR, "parent": equalSTR[cur_pos]});
+                   operands++;
+                   cur_sim=cur_sim - k - 1;
+                   continue;
+               }
+               else if (cur_sim >= 0 && checkOperation(equalSTR[cur_sim]))
+               {
+                   data.push({"name": equalSTR[cur_sim], "parent": equalSTR[cur_pos]});
+                   operands++;
+                   recursiveData(cur_sim,equalSTR);
+                   continue;
+               }
+           }
+        }
+        else if(checkUnary(equalSTR[cur_pos]))
+        {
+            while (operands != 2) {
+                if (cur_sim >= 0 && equalSTR[cur_sim] >= '0' && equalSTR[cur_sim] <= '9') {
+                    var k = 0;
+                    var numSTR = "";
+                    while (cur_sim - k >= 0 && equalSTR[cur_sim - k] != '#') {
+                        numSTR.add(equalSTR[cur_sim - k]);
+                        k++;
+                    }
+                    numSTR = numSTR.split("").reverse().join("");
+                    data.push({"name": numSTR, "parent": equalSTR[cur_pos]});
+                    cur_sim=cur_sim - k - 1;
+                    operands++;
+                    continue;
                 }
-            });
-            root = treeData[0];
-            update(root);
+                else if (cur_sim >= 0 && checkOperation(equalSTR[cur_sim]))
+                {
+                    data.push({"name": equalSTR[cur_sim], "parent": equalSTR[cur_pos]});
+                    operands++;
+                    recursiveData(cur_sim,equalSTR);
+                    continue;
+                }
             }
+        }
+    }
+    generateTree = function () {
+        data = [
+        ];
+        var equalSTR = document.getElementById("equalText").value;
+        equalSTR = polishNotation(equalSTR);
+        data.push({"name": equalSTR[equalSTR.length-1], "parent": "start"});
+        //var newSTR = equalSTR.split("").reverse().join("");
+        current_position = equalSTR.length - 1;
+        recursiveData(equalSTR.length - 1, equalSTR);
+        dataMap = data.reduce(function (map, node) {
+            map[node.name] = node;
+            return map;
+        }, {});
+        treeData = [];
+        data.forEach(function (node) {
+            // add to parent
+            var parent = dataMap[node.parent];
+            if (parent) {
+                // create child array if it doesn't exist
+                (parent.children || (parent.children = []))
+                    // add node to child array
+                        .push(node);
+            } else {
+                // parent is null or missing
+                treeData.push(node);
+            }
+        });
+        root = treeData[0];
+        update(root);
+    }
+    function update(source) {
+        // Compute the new tree layout.
+        var nodes = tree.nodes(root).reverse(),
+                links = tree.links(nodes);
 
+        // Normalize for fixed-depth.
+        nodes.forEach(function (d) {
+            d.y = d.depth * 180;
+        });
 
-        //initialize = function () {
-            d3.select("body").append("div").attr('id', 'navdiv');
-
-            d3.select("#navdiv").append("input").attr('type', 'text').attr('id', 'equalText'); //.select('#equalText').value="Set equal here"
-            d3.select("#navdiv").append("button").attr('type', 'button').attr('onclick', 'generateTree()').text('Generate tree from equals');
-                    //.on('click', generateTree());
-
-            //d3.select("body").append("svg").attr("width", svgW).attr("height", svgH).attr('id', 'treesvg');
-
-        //}
-
-        //initialize();
-        // *********** Convert flat data into a nice tree ***************
-        // create a name: node map
-
-
-        // create the tree array
-
-
-        // ************** Generate the tree diagram	 *****************
-        var margin = {top: 20, right: 120, bottom: 20, left: 120},
-                width = 960 - margin.right - margin.left,
-                height = 500 - margin.top - margin.bottom;
-
-        var i = 0;
-
-        var tree = d3.layout.tree()
-                .size([height, width]);
-
-        var diagonal = d3.svg.diagonal()
-                .projection(function (d) {
-                    return [d.y, d.x];
+        // Declare the nodes…
+        var node = svg.selectAll("g.node")
+                .data(nodes, function (d) {
+                    return d.id || (d.id = ++i);
                 });
 
-        var svg = d3.select("body").append("svg")
-                .attr("width", width + margin.right + margin.left)
-                .attr("height", height + margin.top + margin.bottom)
-                .append("g")
-                .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+        // Enter the nodes.
+        var nodeEnter = node.enter().append("g")
+                .attr("class", "node")
+                .attr("transform", function (d) {
+                    return "translate(" + d.y + "," + d.x + ")";
+                });
 
+        nodeEnter.append("circle")
+                .attr("r", 10)
+                .style("fill", "#fff");
 
+        nodeEnter.append("text")
+                .attr("x", function (d) {
+                    return d.children || d._children ? -13 : 13;
+                })
+                .attr("dy", ".35em")
+                .attr("text-anchor", function (d) {
+                    return d.children || d._children ? "end" : "start";
+                })
+                .text(function (d) {
+                    return d.name;
+                })
+                .style("fill-opacity", 1);
 
-        function update(source) {
+        // Declare the links…
+        var link = svg.selectAll("path.link")
+                .data(links, function (d) {
+                    return d.target.id;
+                });
 
-            // Compute the new tree layout.
-            var nodes = tree.nodes(root).reverse(),
-                    links = tree.links(nodes);
-
-            // Normalize for fixed-depth.
-            nodes.forEach(function (d) {
-                d.y = d.depth * 180;
-            });
-
-            // Declare the nodes…
-            var node = svg.selectAll("g.node")
-                    .data(nodes, function (d) {
-                        return d.id || (d.id = ++i);
-                    });
-
-            // Enter the nodes.
-            var nodeEnter = node.enter().append("g")
-                    .attr("class", "node")
-                    .attr("transform", function (d) {
-                        return "translate(" + d.y + "," + d.x + ")";
-                    });
-
-            nodeEnter.append("circle")
-                    .attr("r", 10)
-                    .style("fill", "#fff");
-
-            nodeEnter.append("text")
-                    .attr("x", function (d) {
-                        return d.children || d._children ? -13 : 13;
-                    })
-                    .attr("dy", ".35em")
-                    .attr("text-anchor", function (d) {
-                        return d.children || d._children ? "end" : "start";
-                    })
-                    .text(function (d) {
-                        return d.name;
-                    })
-                    .style("fill-opacity", 1);
-
-            // Declare the links…
-            var link = svg.selectAll("path.link")
-                    .data(links, function (d) {
-                        return d.target.id;
-                    });
-
-            // Enter the links.
-            link.enter().insert("path", "g")
-                    .attr("class", "link")
-                    .attr("d", diagonal);
-
-        }
+        // Enter the links.
+        link.enter().insert("path", "g")
+                .attr("class", "link")
+                .attr("d", diagonal);
 
     }
-    var tree = tree();
+    }
+    var page = page();
 </script>
 </body>
