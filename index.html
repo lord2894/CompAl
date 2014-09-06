@@ -2,12 +2,13 @@
 <meta charset="utf-8">
 <style>
     body {
-        width: 960px;
+        //width: 960px;
         margin: 10px auto;
+        background:#777777;
     }
 
     #navigation_panel {
-        background: #555;
+        background: #2c2c2c;
     }
 
     #navigation_panel button {
@@ -21,7 +22,8 @@
     }
 
     .node text {
-        font: 12px sans-serif;
+        font: 20px sans-serif;
+        fill: #ffffff
     }
 
     .link {
@@ -177,6 +179,7 @@ function page(){
         }
     }
     generateTree = function () {
+       clearPage();
         data = [
         ];
         var equalSTR = document.getElementById("equalText").value;
@@ -198,13 +201,23 @@ function page(){
                 (parent.children || (parent.children = []))
                     // add node to child array
                         .push(node);
+                        //root = treeData[0];
+                        //update(root);
             } else {
                 // parent is null or missing
                 treeData.push(node);
+                //root = treeData[0];
+                //update(root);
             }
         });
         root = treeData[0];
         update(root);
+    }
+    clearPage = function(){
+        var node = svg.selectAll("g.node");
+        if(node) node.remove();
+        var link = svg.selectAll("path.link");
+        if(link) link.remove();
     }
     function update(source) {
         // Compute the new tree layout.
@@ -232,6 +245,10 @@ function page(){
         nodeEnter.append("circle")
                 .attr("r", 10)
                 .style("fill", "#fff");
+        //for (var j=0; j<nodeEnter[0].length; j++)
+        //{
+        //    setTimeout(function(){nodeEnter[0][j].append("circle").attr("r", 10).style("fill", "#fff");}, 5000);
+        //}
 
         nodeEnter.append("text")
                 .attr("x", function (d) {
