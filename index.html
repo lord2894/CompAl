@@ -39,6 +39,14 @@ function page(){
     d3.select("body").append("div").attr('id', 'navigation_panel');
     d3.select("#navigation_panel").append("input").attr('type', 'text').attr('id', 'equalText'); //.select('#equalText').value="Set equal here"
     d3.select("#navigation_panel").append("button").attr('type', 'button').attr('onclick', 'generateTree()').text('Generate tree from equals');
+    var input = document.getElementById("equalText");
+    input.onkeypress = function (e) {
+        var re = new RegExp("[^0-9\-\.\+\^\\/\*]");
+        var check = input.value + String.fromCharCode(e.charCode);
+        if (re.test(check)) {
+            return false;
+        }
+    };
     var margin = {top: 20, right: 120, bottom: 20, left: 120},
             width = 1500 - margin.right - margin.left,
             height = 1500 - margin.top - margin.bottom;
@@ -58,6 +66,7 @@ function page(){
     var dataMap;
     var data;
     var treeData;
+
     checkOperation = function (symbol) {
         symbol = symbol.toString();
         regexp = new RegExp("[\\^\\+\\-\\*\\/]+");
@@ -82,6 +91,9 @@ function page(){
         //if (op_1 == '(') op_1pr = 0;
         if (op_2 == '(') op_2pr = 0;
         return op1pr - op2pr;
+    }
+    checkSTRtrubles = function(equalSTR)  {
+        return true;
     }
     polishNotation = function (equalSTR) {
         var stack = [];
@@ -183,35 +195,37 @@ function page(){
         data = [
         ];
         var equalSTR = document.getElementById("equalText").value;
-        equalSTR = polishNotation(equalSTR);
-        data.push({"name": equalSTR[equalSTR.length-1], "parent": "start", "parentID": -1, "nameID": equalSTR.length-1});
-        //var newSTR = equalSTR.split("").reverse().join("");
-        current_position = equalSTR.length - 1;
-        recursiveData(equalSTR.length - 1, equalSTR);
-        dataMap = data.reduce(function (map, node) {
-            map[node.name+node.nameID] = node;
-            return map;
-        }, {});
-        treeData = [];
-        data.forEach(function (node) {
-            // add to parent
-            var parent = dataMap[node.parent+node.parentID];
-            if (parent) {
-                // create child array if it doesn't exist
-                (parent.children || (parent.children = []))
-                    // add node to child array
-                        .push(node);
-                        //root = treeData[0];
-                        //update(root);
-            } else {
-                // parent is null or missing
-                treeData.push(node);
-                //root = treeData[0];
-                //update(root);
-            }
-        });
-        root = treeData[0];
-        update(root);
+        if(checkSTRtrubles(equalSTR)) {
+            equalSTR = polishNotation(equalSTR);
+            data.push({"name": equalSTR[equalSTR.length - 1], "parent": "start", "parentID": -1, "nameID": equalSTR.length - 1});
+            //var newSTR = equalSTR.split("").reverse().join("");
+            current_position = equalSTR.length - 1;
+            recursiveData(equalSTR.length - 1, equalSTR);
+            dataMap = data.reduce(function (map, node) {
+                map[node.name + node.nameID] = node;
+                return map;
+            }, {});
+            treeData = [];
+            data.forEach(function (node) {
+                // add to parent
+                var parent = dataMap[node.parent + node.parentID];
+                if (parent) {
+                    // create child array if it doesn't exist
+                    (parent.children || (parent.children = []))
+                        // add node to child array
+                            .push(node);
+                    //root = treeData[0];
+                    //update(root);
+                } else {
+                    // parent is null or missing
+                    treeData.push(node);
+                    //root = treeData[0];
+                    //update(root);
+                }
+            });
+            root = treeData[0];
+            update(root);
+        }
     }
     clearPage = function(){
         var node = svg.selectAll("g.node");
