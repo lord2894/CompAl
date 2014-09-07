@@ -1,54 +1,68 @@
-<!DOCTYPE html>
+<!doctype html>
+<!--[if lt IE 7]> <html class="ie6 oldie"> <![endif]-->
+<!--[if IE 7]>    <html class="ie7 oldie"> <![endif]-->
+<!--[if IE 8]>    <html class="ie8 oldie"> <![endif]-->
+<!--[if gt IE 8]><!-->
+<html class="">
+<!--<![endif]-->
+<head>
 <meta charset="utf-8">
-<style>
-    body {
-        //width: 960px;
-        margin: 10px auto;
-        background:#777777;
-    }
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Untitled Document</title>
+<link href="boilerplate.css" rel="stylesheet" type="text/css">
+<link href="style.css" rel="stylesheet" type="text/css">
+<!-- 
+To learn more about the conditional comments around the html tags at the top of the file:
+paulirish.com/2008/conditional-stylesheets-vs-css-hacks-answer-neither/
 
-    #navigation_panel {
-        background: #2c2c2c;
-    }
-
-    #navigation_panel button {
-        vertical-align: middle;
-    }
-
-    .node circle {
-        fill: #fff;
-        stroke: steelblue;
-        stroke-width: 3px;
-    }
-
-    .node text {
-        font: 20px sans-serif;
-        fill: #ffffff
-    }
-
-    .link {
-        fill: none;
-        stroke: #ccc;
-        stroke-width: 2px;
-    }
-</style>
+Do the following if you're using your customized build of modernizr (http://www.modernizr.com/):
+* insert the link to your js here
+* remove the link below to the html5shiv
+* add the "no-js" class to the html tags at the top
+* you can also remove the link to respond.min.js if you included the MQ Polyfill in your modernizr build 
+-->
+<!--[if lt IE 9]>
+<script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+<![endif]-->
+<script src="respond.min.js"></script>
+</head>
 <body>
-<script src="http://d3js.org/d3.v3.min.js"></script>
+	<script src="http://d3js.org/d3.v3.min.js"></script>
+	<div id="header" class="fluid">
+		<hgroup id="head" class="fluid">
+			<div id="head_text" class="fluid"><header id="header_t" class="fluid">Компьютерная алгебра</header></div>
+			<div id="description" class="fluid">Данный сервис предназначен для предоставления пользователю возможности увидеть любое рациональное выражение (знаки + - * / ) в виде дерева его решения.</div><div id="example" class="fluid">Пример входных данных: 4.5-6/(1-2.5)^2-1<br>
+  Внимание! Для ввода доступны только следующие символы: . 0-9 + - * / ^ ( )
+Возможность ввода других символов отключена из соображений безопасности.<br>
+			</div>
+		</hgroup>
+	</div>
+<div id="navigation_panel" class="fluid">
+<form id="mainForm">
+  <label for="racText">Введите рациональное выражение:</label>
+  <input name="racText" type="text" id="racText" size="50">
+  <input type="button" name="generateBtn" id="generateBtn" value="Генерировать дерево">  
+</form>
+</div>
+<div id="svg_panel" class="fluid"><svg><g></g></svg></div>
+<footer id="e-mail_area" class="fluid"><a href="mailto:ivanov.kir.m@yandex.ru"></a>Проект подготовлен Ивановым Кириллом, группа 402 ФКН ПМИ НИУ-ВШЭ. Мой адрес электронной почты: <a href="mailto:ivanov.kir.m@yandex.ru">ivanov.kir.m@yandex.ru</a></footer>
 <script>
 function page(){
-    d3.select("body").append("div").attr('id', 'navigation_panel');
-    d3.select("#navigation_panel").append("input").attr('type', 'text').attr('id', 'equalText'); //.select('#equalText').value="Set equal here"
-    d3.select("#navigation_panel").append("button").attr('type', 'button').attr('onclick', 'generateTree()').text('Generate tree from equals');
-    var input = document.getElementById("equalText");
-    input.onkeypress = function (e) {
-        var re = new RegExp("[^0-9\-\.\+\^\\/\*]");
-        var check = input.value + String.fromCharCode(e.charCode);
+    d3.select("#navigation_panel").select("#generateBtn").attr('onclick', 'generateTree()');
+    var input = document.getElementById("racText");
+    input.oninput = function () {
+        var re = new RegExp("[^0-9\-\.\+\^\\/\*\(\)]");
+        //var check = input.value + String.fromCharCode(e.charCode);
+		var check = input.value;
         if (re.test(check)) {
+			check = check.replace(re, '');
+			input.value = check;
             return false;
         }
     };
+	var svg_panel = document.getElementById("svg_panel");
     var margin = {top: 20, right: 120, bottom: 20, left: 120},
-            width = 1500 - margin.right - margin.left,
+			width = 960 - margin.right - margin.left,
             height = 1500 - margin.top - margin.bottom;
     var tree = d3.layout.tree()
             .size([height,width]);
@@ -56,12 +70,11 @@ function page(){
             .projection(function (d) {
                 return [width-d.x, d.y];
             });
-    var svg = d3.select("body").append("svg")
-            .attr("width", width + margin.right + margin.left)
+    var svg = d3.select("body").select("#svg_panel").select("svg").attr("width", width + margin.right + margin.left)
             .attr("height", height + margin.top + margin.bottom)
-            .append("g")
+            .select("g")
             .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
-    var cur_sim = 0;
+ var cur_sim = 0;
     var i = 0;
     var dataMap;
     var data;
@@ -191,10 +204,10 @@ function page(){
         }
     }
     generateTree = function () {
-       clearPage();
+        clearPage();
         data = [
         ];
-        var equalSTR = document.getElementById("equalText").value;
+        var equalSTR = document.getElementById("racText").value;
         if(checkSTRtrubles(equalSTR)) {
             equalSTR = polishNotation(equalSTR);
             data.push({"name": equalSTR[equalSTR.length - 1], "parent": "start", "parentID": -1, "nameID": equalSTR.length - 1});
@@ -240,7 +253,8 @@ function page(){
 
         // Normalize for fixed-depth.
         nodes.forEach(function (d) {
-            d.y = d.depth * 180;
+            d.y = d.depth * 100;
+			d.x = d.x * 0.5;
         });
 
         // Declare the nodes…
@@ -290,6 +304,8 @@ function page(){
 
     }
 }
-var page = page();
+var page = page();			
 </script>
+
 </body>
+</html>

@@ -1,0 +1,303 @@
+@charset "utf-8";
+/* Simple fluid media
+   Note: Fluid media requires that you remove the media's height and width attributes from the HTML
+   http://www.alistapart.com/articles/fluid-images/ 
+*/
+img, object, embed, video {
+	max-width: 100%;
+}
+
+/* IE 6 does not support max-width so default to width 100% */
+.ie6 img {
+	width:100%;
+}
+
+/*
+	Dreamweaver Fluid Grid Properties
+	----------------------------------
+	dw-num-cols-mobile:		4;
+	dw-num-cols-tablet:		8;
+	dw-num-cols-desktop:	12;
+	dw-gutter-percentage:	25;
+	
+	Inspiration from "Responsive Web Design" by Ethan Marcotte 
+	http://www.alistapart.com/articles/responsive-web-design
+	
+	and Golden Grid System by Joni Korpi
+	http://goldengridsystem.com/
+*/
+
+body {
+        width: 960px;
+        margin: 10px auto;
+        background:#777777;
+		color: #FFFFFF;
+    }
+#navigation_panel {
+	background: #2c2c2c;
+	width: auto;
+	color: #FFF9F9;
+    }
+#navigation_panel button {
+	-moz-box-shadow:inset 1px 0px 0px 0px #ffffff;
+	-webkit-box-shadow:inset 1px 0px 0px 0px #ffffff;
+	box-shadow:inset 1px 0px 0px 0px #ffffff;
+	background:-webkit-gradient( linear, left top, left bottom, color-stop(0.05, #ededed), color-stop(1, #dfdfdf) );
+	background:-moz-linear-gradient( center top, #ededed 5%, #dfdfdf 100% );
+	filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='#ededed', endColorstr='#dfdfdf');
+	background-color:#ededed;
+	-webkit-border-top-left-radius:0px;
+	-moz-border-radius-topleft:0px;
+	border-top-left-radius:0px;
+	-webkit-border-top-right-radius:0px;
+	-moz-border-radius-topright:0px;
+	border-top-right-radius:0px;
+	-webkit-border-bottom-right-radius:0px;
+	-moz-border-radius-bottomright:0px;
+	border-bottom-right-radius:0px;
+	-webkit-border-bottom-left-radius:0px;
+	-moz-border-radius-bottomleft:0px;
+	border-bottom-left-radius:0px;
+	text-indent:0px;
+	display:inline-block;
+	color:#736673;
+	font-family:Comic Sans MS;
+	font-size:14px;
+	font-weight:normal;
+	font-style:normal;
+	height:20px;
+	line-height:20px;
+	width:172px;
+	text-decoration:none;
+	text-align:center;
+	text-shadow:1px 0px 18px #ffffff;
+}
+#navigation_panel button:hover {
+	background:-webkit-gradient( linear, left top, left bottom, color-stop(0.05, #dfdfdf), color-stop(1, #ededed) );
+	background:-moz-linear-gradient( center top, #dfdfdf 5%, #ededed 100% );
+	filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='#dfdfdf', endColorstr='#ededed');
+	background-color:#dfdfdf;
+}
+#navigation_panel button:active {
+	position:relative;
+	top:1px;
+}
+	.node circle {
+        fill: #fff;
+        stroke: steelblue;
+        stroke-width: 3px;
+    }
+
+    .node text {
+        font: 20px sans-serif;
+        fill: #ffffff
+    }
+
+    .link {
+        fill: none;
+        stroke: #ccc;
+        stroke-width: 2px;
+    }	
+.fluid {
+	clear: both;
+	margin-left: 0;
+	width: 100%;
+	float: left;
+	display: block;
+}
+
+.fluidList {
+    list-style:none;
+    list-style-image:none;
+    margin:0;
+    padding:0;        
+}
+
+/* Mobile Layout: 480px and below. */
+  
+.gridContainer {
+	margin-left: auto;
+	margin-right: auto;
+	width: 86.45%;
+	padding-left: 2.275%;
+	padding-right: 2.275%;
+	clear: none;
+	float: none;
+}
+#div1 {
+}
+#navigation_panel {
+width: 100%;
+}
+#header {
+width: 100%;
+}
+#head {
+width: 100%;
+margin-left: 0;
+}
+#description {
+width: 100%;
+clear: both;
+margin-left: 0;
+}
+#example {
+width: 100%;
+clear: both;
+margin-left: 0;
+}
+#head_text {
+clear: both;
+margin-left: 0;
+width: 100%;
+}
+#header_t {
+width: 100%;
+margin-left: 0;
+}
+#svg_panel {
+}
+#e-mail_area {
+}
+.zeroMargin_mobile {
+margin-left: 0;
+}
+.hide_mobile {
+display: none;
+}
+
+/* Tablet Layout: 481px to 768px. Inherits styles from: Mobile Layout. */
+
+@media only screen and (min-width: 481px) {
+
+body {
+        width: 960px;
+        margin: 10px auto;
+        background:#777777;
+    }
+	
+.gridContainer {
+	width: 90.675%;
+	padding-left: 1.1625%;
+	padding-right: 1.1625%;
+	clear: none;
+	float: none;
+	margin-left: auto;
+}
+#div1 {
+}
+#navigation_panel {
+width: 100%;
+}
+#header {
+width: 100%;
+}
+#head {
+width: 100%;
+margin-left: 0;
+}
+#description {
+width: 100%;
+clear: both;
+margin-left: 0;
+}
+#example {
+width: 100%;
+clear: both;
+margin-left: 0;
+}
+#head_text {
+clear: both;
+margin-left: 0;
+width: 100%;
+}
+#header_t {
+width: 100%;
+margin-left: 0;
+}
+#svg_panel {
+}
+#e-mail_area {
+}
+.hide_tablet {
+display: none;
+}
+.zeroMargin_tablet {
+margin-left: 0;
+}
+}
+
+/* Desktop Layout: 769px to a max of 1232px.  Inherits styles from: Mobile Layout and Tablet Layout. */
+
+@media only screen and (min-width: 769px) {
+	body {
+        width: 960px;
+        margin: 10px auto;
+        background:#777777;
+    }
+
+.gridContainer {
+	width: 88.5%;
+	max-width: 1232px;
+	padding-left: 0.75%;
+	padding-right: 0.75%;
+	margin: auto;
+	clear: none;
+	float: none;
+	margin-left: auto;
+}
+#div1 {
+}
+#navigation_panel {
+	margin-left: 30px;
+	margin-right: 30px;
+	width: 91.5254%;
+	text-align: center;
+}
+#header {
+width: 100%;
+}
+#head {
+	margin-left: 0;
+	width: 100%;
+	margin-right: 30px;
+	text-align: left;
+}
+#description {
+	width: 40.6779%;
+	margin-left: 8.4745%;
+	clear: both;
+	font-family: Segoe, "Segoe UI", "DejaVu Sans", "Trebuchet MS", Verdana, sans-serif;
+}
+#example {
+	width: 40.6779%;
+	margin-left: 1.6949%;
+	clear: none;
+	margin-right: 30px;
+	font-family: Segoe, "Segoe UI", "DejaVu Sans", "Trebuchet MS", Verdana, sans-serif;
+}
+#head_text {
+	margin-left: 0;
+	clear: both;
+	text-align: left;
+	margin-right: 30px;
+	width: 91.5254%;
+}
+#header_t {
+	font-family: Consolas, "Andale Mono", "Lucida Console", "Lucida Sans Typewriter", Monaco, "Courier New", monospace;
+	font-size: 36px;
+	width: 100%;
+	text-align: center;
+}
+#svg_panel {
+}
+#e-mail_area {
+	text-align: right;
+}
+.zeroMargin_desktop {
+margin-left: 0;
+}
+.hide_desktop {
+display: none;
+}
+}
