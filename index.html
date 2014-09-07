@@ -53,10 +53,16 @@ function page(){
     input.oninput = function () {
         var re = new RegExp("[^0-9\-\.\+\^\\/\*\(\)]");
         //var check = input.value + String.fromCharCode(e.charCode);
-		var check = input.value;
+        var check = input.value;
+        var change = true;
         if (re.test(check)) {
-			check = check.replace(re, '');
-			input.value = check;
+            while(change){
+                var length = check.length;
+                check = check.replace(re, '');
+                if (length == check.length)
+                    change = false;
+            }
+            input.value = check;
             return false;
         }
     };
