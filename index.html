@@ -153,12 +153,12 @@ function page(){
                     i--;
                 } else {
                     if (current_symbol == ')') {
-                        while (stack.length > 0 && current_symbol != '(') {
+                        while (stack.length >= 0 && current_symbol != '(') {
                             current_symbol = stack.pop();
                             if (current_symbol != '(')
                                 return_string += (current_symbol);
                         }
-                        if (stack.length <= 0 && current_symbol != '(') {
+                        if (stack.length == 0 && current_symbol != '(') {
                             return return_string = "error1";
                         }
                     } else if (checkOperation(current_symbol)) {
@@ -192,7 +192,7 @@ function page(){
             }
             while (stack.length != 0) {
                 var cur = stack.pop()
-                if (current_symbol == '(') {
+                if (cur == '(') {
                     return return_string = "error1";
                 } else
                     return_string += cur;
@@ -316,7 +316,7 @@ function page(){
             data=[];
             if(equalSTR[equalSTR.length-1] == '1')
             {
-				document.getElementById("error_text").innerHTML = "Ошибка! Не согласование скобок.";
+				document.getElementById("error_text").innerHTML = "Ошибка! Нет согласования скобок.";
                 //data.push({"name": "Ошибка! Не согласование скобок.", "parent": "start", "parentID": -1, "nameID": 1});
             }
             if (equalSTR[equalSTR.length-1] == '2'){
@@ -340,7 +340,7 @@ function page(){
         if(link) link.remove();
 		document.getElementById("error_text").innerHTML = "";
     }
-    function update(source) {
+    update = function(source) {
         // Compute the new tree layout.
         var nodes = tree.nodes(root).reverse(),
                 links = tree.links(nodes);
@@ -363,7 +363,7 @@ function page(){
                 .attr("class", "node")
                 .attr("transform", function (d) {
                     return "translate(" + d.x + "," + d.y + ")";
-                });
+                }).attr("id", function(d) {return d.id;});
 
         nodeEnter.append("circle")
                 .attr("r", 10);
@@ -390,8 +390,55 @@ function page(){
         // Enter the links.
         link.enter().insert("path", "g")
                 .attr("class", "link")
+                .attr("id", function(d) {
+                    return d.source.id;
+                })
                 .attr("d", diagonal);
 
+        SetOnClick();
+    }
+    SetOnClick = function() {
+        data=data.reverse();
+        var node = svg.selectAll("g.node");
+        //var link = svg.selectAll("path.link");
+        //var nodeEnter = node.selectAll("g");
+        //var texts = nodeEnter.selectAll("text");
+        for (var i=0; i<node[0].length;i++)
+        {
+            if (checkOperation(node[0][i].textContent)){
+                node[0][i].onclick = function(){NodeOnClick(this)};
+                //node[0][i].textContent = node[0][i].textContent + "off";
+                node[0][i].children[0].style.fill = "FF4344";
+                //document.getElementById("error_text").innerHTML = "Ошибка! Непредвиденный символ.";
+            };
+        }
+    }
+    NodeOnClick = function (node) {
+        var index = parseInt(node.id) - 1;
+        if (checkBinary(node.textContent)) {
+            var operands = [];
+            for (var i = data[index].children.length-1; i >= 0; i--) {
+                if (parseFloat(data[index].children[i].name)) {
+                    operands.push(parseFloat(data[index].children[i].name));
+                }
+                else {
+                    var idnode = parseInt(data[index].children[i].id)-1;
+                    var new_oper = NodeOnClick(svg.selectAll("g.node")[0][idnode]);
+                    operands.push(new_oper);
+                }
+            }
+            var res = getResult(operands, node.textContent[0]);
+            document.getElementById("error_text").innerHTML = "Результат: "+res;
+            return res;
+        }
+    };
+    getResult = function (operands, op) {
+        var op1pr, op2pr;
+        if (op == '^') return Math.pow(operands[0], operands[1]);
+        if (op == '*') return operands[0]*operands[1];
+        if (op == '/') return operands[0]/operands[1];
+        if (op == '+') return operands[0]+operands[1];
+        if (op == '-') return operands[0]-operands[1];
     }
 }
 var page = page();			
