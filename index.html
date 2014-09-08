@@ -8,7 +8,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Untitled Document</title>
+<title>Компьютерная алгебра</title>
 <link href="boilerplate.css" rel="stylesheet" type="text/css">
 <link href="style.css" rel="stylesheet" type="text/css">
 <!-- 
@@ -44,6 +44,9 @@ Do the following if you're using your customized build of modernizr (http://www.
   <input type="button" name="generateBtn" id="generateBtn" value="Генерировать дерево">  
 </form>
 </div>
+<hgroup id="error_area" class="fluid">
+  <div id="error_text" class="fluid"></div>
+</hgroup>
 <div id="svg_panel" class="fluid"><svg><g></g></svg></div>
 <footer id="e-mail_area" class="fluid"><a href="mailto:ivanov.kir.m@yandex.ru"></a>Проект подготовлен Ивановым Кириллом, группа 402 ФКН ПМИ НИУ-ВШЭ. Мой адрес электронной почты: <a href="mailto:ivanov.kir.m@yandex.ru">ivanov.kir.m@yandex.ru</a></footer>
 <script>
@@ -68,13 +71,13 @@ function page(){
     };
 	var svg_panel = document.getElementById("svg_panel");
     var margin = {top: 20, right: 120, bottom: 20, left: 120},
-			width = 960 - margin.right - margin.left,
+			width = 1500 - margin.right - margin.left,
             height = 1500 - margin.top - margin.bottom;
     var tree = d3.layout.tree()
             .size([height,width]);
     var diagonal = d3.svg.diagonal()
             .projection(function (d) {
-                return [width-d.x, d.y];
+                return [d.x, d.y];
             });
     var svg = d3.select("body").select("#svg_panel").select("svg").attr("width", width + margin.right + margin.left)
             .attr("height", height + margin.top + margin.bottom)
@@ -112,53 +115,95 @@ function page(){
         return op1pr - op2pr;
     }
     checkSTRtrubles = function(equalSTR)  {
-        return true;
+        regexp = new RegExp("error[0-9]");
+        return regexp.test(equalSTR);
+    }
+    checkSTRoperations = function(equalSTR)  {
+        regexp = new RegExp("[\\^\\+\\-\\*\\/]{2,}");
+        if (re.test(equalSTR)) {
+            return "error3";
+        }
+        else {
+            return equalSTR;
+        }
     }
     polishNotation = function (equalSTR) {
-        var stack = [];
-        var N = equalSTR.length;
-        var return_string = "";
-        for (var i = 0; i < N; i++) {
-            var current_symbol = equalSTR.charAt(i);
-            if ((current_symbol <= '9' && current_symbol >= '0')) {
-                return_string += '#';
-                while ((current_symbol <= '9' && current_symbol >= '0') || current_symbol == '.') {
-                    return_string += (current_symbol);
-                    current_symbol = equalSTR.charAt(++i);
+        re = new RegExp("[\\^\\+\\-\\*\\/]{2,}");
+        if (re.test(equalSTR)) {
+            return return_string = "error3";
+        }
+        else {
+            var stack = [];
+            var N = equalSTR.length;
+            var return_string = "";
+            for (var i = 0; i < N; i++) {
+                var current_symbol = equalSTR.charAt(i);
+                if ((current_symbol >= '0' && current_symbol <= '9')) {
+                    return_string += '#';
+                    var dot = false;
+                    while ((current_symbol >= '0' && current_symbol <= '9') || current_symbol == '.') {
+                        if (current_symbol == '.' && dot == false)
+                            dot = true;
+                        else if (current_symbol == '.' && dot == true) {
+                            return return_string = "error2";
+                        }
+                        return_string += (current_symbol);
+                        current_symbol = equalSTR.charAt(++i);
+                    }
+                    i--;
+                } else {
+                    if (current_symbol == ')') {
+                        while (stack.length > 0 && current_symbol != '(') {
+                            current_symbol = stack.pop();
+                            if (current_symbol != '(')
+                                return_string += (current_symbol);
+                        }
+                        if (stack.length <= 0 && current_symbol != '(') {
+                            return return_string = "error1";
+                        }
+                    } else if (checkOperation(current_symbol)) {
+                        while (checkPriority(current_symbol, stack[stack.length - 1]) <= 0) {
+                            return_string += (stack.pop());
+                        }
+                        stack.push(current_symbol);
+                    } else if (current_symbol == '(') {
+                        stack.push(current_symbol);
+                    }
+                      else if (current_symbol == '.'){
+                        current_symbol = equalSTR.charAt(++i);
+                        if ((current_symbol >= '0' && current_symbol <= '9')) {
+                            return_string += '#';
+                            return_string += '0';
+                            return_string += '.';
+                            var dot = true;
+                            while ((current_symbol >= '0' && current_symbol <= '9') || current_symbol == '.') {
+                                if (current_symbol == '.' && dot == true) {
+                                    return return_string = "error2";
+                                }
+                                return_string += (current_symbol);
+                                current_symbol = equalSTR.charAt(++i);
+                            }
+                            i--;
+                        } else return return_string = "error4"
+                    }
+                    else
+                        return return_string = "error4";
                 }
-                i--;
-            } else {
-                if (current_symbol == ')') {
-                    while (current_symbol != '(') {
-                        current_symbol = stack.pop();
-                        if (current_symbol != '(')
-                            return_string += (current_symbol);
-                    }
-                    //stack.pop();
-//                        if (stack.length > 0) {
-//                            current_symbol = stack[stack.length - 1];
-//                            if (checkOperation(current_symbol)) {
-//                                stack.pop();
-//                                return_string += (current_symbol);
-//                            }
-//                        }
-                } else if (current_symbol != '(') {
-                    while (checkPriority(current_symbol, stack[stack.length - 1]) <= 0) {
-                        return_string += (stack.pop());
-                    }
-                    stack.push(current_symbol);
-                } else stack.push(current_symbol);
             }
+            while (stack.length != 0) {
+                var cur = stack.pop()
+                if (current_symbol == '(') {
+                    return return_string = "error1";
+                } else
+                    return_string += cur;
+            }
+            return return_string;
         }
-        while (stack.length != 0) {
-            return_string += (stack.pop());
-        }
-        return return_string;
     }
     recursiveData = function (cur_pos, equalSTR) {
         var operands = 0;
         cur_sim = cur_pos - 1;
-        if(checkBinary(equalSTR[cur_pos]))
+        if(cur_pos>=0 && checkBinary(equalSTR[cur_pos]))
         {
             while (operands != 2) {
                 if (cur_sim >= 0 && equalSTR[cur_sim] >= '0' && equalSTR[cur_sim] <= '9') {
@@ -180,6 +225,13 @@ function page(){
                     operands++;
                     recursiveData(cur_sim,equalSTR);
                     continue;
+                }
+                else if (cur_sim <0 && operands != 2)
+                {
+                    //data=[];
+                    //data.push({"name": "Ошибка! Для операции " + equalSTR[cur_pos]+ " не хватает операндов.", "parent": "start", "parentID": -1, "nameID": 0});
+                    document.getElementById("error_text").innerHTML = "Ошибка! Для операции " + equalSTR[cur_pos]+ " не хватает операндов.";
+                    return;
                 }
             }
         }
@@ -214,12 +266,27 @@ function page(){
         data = [
         ];
         var equalSTR = document.getElementById("racText").value;
-        if(checkSTRtrubles(equalSTR)) {
-            equalSTR = polishNotation(equalSTR);
-            data.push({"name": equalSTR[equalSTR.length - 1], "parent": "start", "parentID": -1, "nameID": equalSTR.length - 1});
-            //var newSTR = equalSTR.split("").reverse().join("");
-            current_position = equalSTR.length - 1;
-            recursiveData(equalSTR.length - 1, equalSTR);
+        equalSTR = polishNotation(equalSTR);
+        if(!checkSTRtrubles(equalSTR)) {
+            //data.push({"name": equalSTR[equalSTR.length - 1], "parent": "start", "parentID": -1, "nameID": equalSTR.length - 1});
+            cur_sim =  equalSTR.length - 1
+            if (cur_sim >= 0 && equalSTR[cur_sim] >= '0' && equalSTR[cur_sim] <= '9') {
+                var k = 0;
+                var numSTR = "";
+                while (cur_sim - k >= 0 && equalSTR[cur_sim - k] != '#') {
+                    numSTR += equalSTR[cur_sim - k];
+                    k++;
+                }
+                numSTR = numSTR.split("").reverse().join("");
+                data.push({"name": numSTR, "parent": "start", "parentID": -1, "nameID": cur_sim-k});
+                cur_sim=cur_sim - k - 1;
+            }
+            else if (cur_sim >= 0 && checkOperation(equalSTR[cur_sim]))
+            {
+                data.push({"name": equalSTR[cur_sim], "parent": "start", "parentID": -1, "nameID": cur_sim});
+            }
+            //current_position = equalSTR.length - 1;
+            recursiveData(cur_sim, equalSTR);
             dataMap = data.reduce(function (map, node) {
                 map[node.name + node.nameID] = node;
                 return map;
@@ -245,12 +312,33 @@ function page(){
             root = treeData[0];
             update(root);
         }
+        else {
+            data=[];
+            if(equalSTR[equalSTR.length-1] == '1')
+            {
+				document.getElementById("error_text").innerHTML = "Ошибка! Не согласование скобок.";
+                //data.push({"name": "Ошибка! Не согласование скобок.", "parent": "start", "parentID": -1, "nameID": 1});
+            }
+            if (equalSTR[equalSTR.length-1] == '2'){
+				document.getElementById("error_text").innerHTML = "Ошибка! В выражении присутствует\nлишняя точка(.).";
+                //data.push({"name": "Ошибка! В выражении присутствует\nлишняя точка(.).", "parent": "start", "parentID": -1, "nameID": 2});
+            }
+            if (equalSTR[equalSTR.length-1] == '3'){
+				document.getElementById("error_text").innerHTML = "Ошибка! В выражении присутствуют лишние знаки операций.";
+                //data.push({"name": "Ошибка! В выражении присутствуют лишние знаки операций.", "parent": "start", "parentID": -1, "nameID": 3});
+            }
+            if (equalSTR[equalSTR.length-1] == '4'){
+                document.getElementById("error_text").innerHTML = "Ошибка! Непредвиденный символ.";
+                //data.push({"name": "Ошибка! В выражении присутствуют лишние знаки операций.", "parent": "start", "parentID": -1, "nameID": 3});
+            }
+        }
     }
     clearPage = function(){
         var node = svg.selectAll("g.node");
         if(node) node.remove();
         var link = svg.selectAll("path.link");
         if(link) link.remove();
+		document.getElementById("error_text").innerHTML = "";
     }
     function update(source) {
         // Compute the new tree layout.
@@ -260,7 +348,8 @@ function page(){
         // Normalize for fixed-depth.
         nodes.forEach(function (d) {
             d.y = d.depth * 100;
-			d.x = d.x * 0.5;
+			//d.x = d.x * 0.5;
+            d.x = (width-d.x)*0.5;
         });
 
         // Declare the nodes…
@@ -273,16 +362,11 @@ function page(){
         var nodeEnter = node.enter().append("g")
                 .attr("class", "node")
                 .attr("transform", function (d) {
-                    return "translate(" + (width-d.x) + "," + d.y + ")";
+                    return "translate(" + d.x + "," + d.y + ")";
                 });
 
         nodeEnter.append("circle")
-                .attr("r", 10)
-                .style("fill", "#fff");
-        //for (var j=0; j<nodeEnter[0].length; j++)
-        //{
-        //    setTimeout(function(){nodeEnter[0][j].append("circle").attr("r", 10).style("fill", "#fff");}, 5000);
-        //}
+                .attr("r", 10);
 
         nodeEnter.append("text")
                 .attr("x", function (d) {
