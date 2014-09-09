@@ -364,19 +364,29 @@ function page() {
         data = [
         ];
         var equalSTR = document.getElementById("racText").value;
-        equalSTR = equalSTR.replace(':','/');
-        equalSTR = equalSTR.replace(',','.');
-        var regmult = new RegExp("([0-9]\\()");
-        while(equalSTR.search(regmult) != -1)
+        var re = new RegExp("([0-9]\\()");
+        while(equalSTR.search(re) != -1)
         {
-          var ix =equalSTR.search(regmult);
+          var ix =equalSTR.search(re);
           equalSTR = equalSTR.substr(0,ix+1)+"*"+equalSTR.substr(ix+1);
         };
-        var regmult = new RegExp("(\\)[0-9])");
-        while(equalSTR.search(regmult) != -1)
+        re = new RegExp("(\\)[0-9])");
+        while(equalSTR.search(re) != -1)
         {
-            var ix =equalSTR.search(regmult);
+            var ix =equalSTR.search(re);
             equalSTR = equalSTR.substr(0,ix+1)+"*"+equalSTR.substr(ix+1);
+        };
+        re = new RegExp("\:");
+        while(equalSTR.search(re) != -1)
+        {
+            var ix =equalSTR.search(re);
+            equalSTR=equalSTR.substr(0,ix)+"/"+equalSTR.substr(ix+1);
+        };
+        re = new RegExp("\,");
+        while(equalSTR.search(re) != -1)
+        {
+            var ix =equalSTR.search(re);
+            equalSTR=equalSTR.substr(0,ix)+"."+equalSTR.substr(ix+1);
         };
         //equalSTR = equalSTR re
         equalSTR = polishNotation(equalSTR);
