@@ -366,6 +366,19 @@ function page() {
         var equalSTR = document.getElementById("racText").value;
         equalSTR = equalSTR.replace(':','/');
         equalSTR = equalSTR.replace(',','.');
+        var regmult = new RegExp("([0-9]\\()");
+        while(equalSTR.search(regmult) != -1)
+        {
+          var ix =equalSTR.search(regmult);
+          equalSTR = equalSTR.substr(0,ix+1)+"*"+equalSTR.substr(ix+1);
+        };
+        var regmult = new RegExp("(\\)[0-9])");
+        while(equalSTR.search(regmult) != -1)
+        {
+            var ix =equalSTR.search(regmult);
+            equalSTR = equalSTR.substr(0,ix+1)+"*"+equalSTR.substr(ix+1);
+        };
+        //equalSTR = equalSTR re
         equalSTR = polishNotation(equalSTR);
         if (!checkSTRtrubles(equalSTR)) {
             //data.push({"name": equalSTR[equalSTR.length - 1], "parent": "start", "parentID": -1, "nameID": equalSTR.length - 1});
@@ -386,7 +399,7 @@ function page() {
             }
             //current_position = equalSTR.length - 1;
             recursiveData(cur_sim, equalSTR);
-            if (document.getElementById("error_text").innerHTM.search("Ошибка!") == -1) {
+            if (document.getElementById("error_text").innerHTML.search("Ошибка!") == -1) {
                 dataMap = data.reduce(function (map, node) {
                     map[node.name + node.nameID] = node;
                     return map;
