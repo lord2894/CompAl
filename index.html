@@ -69,7 +69,13 @@ function page(){
             return false;
         }
     };
-	var svg_panel = document.getElementById("svg_panel");
+    input.onkeydown = function (e) {
+        if (event.keyCode == 13) {
+            generateTree()
+        }
+    };
+
+    var svg_panel = document.getElementById("svg_panel");
     var margin = {top: 20, right: 120, bottom: 20, left: 120},
 			width = 1500 - margin.right - margin.left,
             height = 1500 - margin.top - margin.bottom;
