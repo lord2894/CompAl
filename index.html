@@ -126,7 +126,7 @@ function page() {
     var data;
     var treeData;
     var operation_nodes = [];
-
+    document.getElementById("error_text").innerHTM = "";
     checkOperation = function (symbol) {
         symbol = symbol.toString();
         regexp = new RegExp("^[\\^\\+\\-\\*\\/]+$");
