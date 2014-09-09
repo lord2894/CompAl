@@ -52,44 +52,56 @@ Do the following if you're using your customized build of modernizr (http://www.
 <script>
 function page(){
     d3.select("#navigation_panel").select("#generateBtn").attr('onclick', 'generateTree()');
-    var input = document.getElementById("racText");
-    input.oninput = function () {
-        var re = new RegExp("[^0-9\-\.\+\^\\/\*\(\)]");
-        //var check = input.value + String.fromCharCode(e.charCode);
-        var check = input.value;
-        var change = true;
-        if (re.test(check)) {
-            while(change){
-                var length = check.length;
-                check = check.replace(re, '');
-                if (length == check.length)
-                    change = false;
-            }
-            input.value = check;
+var input = document.getElementById("racText");
+input.oninput = function () {
+    var re = new RegExp("[^0-9\-\.\+\^\\/\*\(\)]");
+    //var check = input.value + String.fromCharCode(e.charCode);
+    var check = input.value;
+    var change = true;
+    if (re.test(check)) {
+        while(change){
+            var length = check.length;
+            check = check.replace(re, '');
+            if (length == check.length)
+                change = false;
+        }
+        input.value = check;
+        return false;
+    }
+};
+input.onkeypress = function (e) {
+    if (event.keyCode == 13) {
+        event.preventDefault();
+        generateTree();
+    }
+};
+/*    document.onkeyup = function (e) {
+        e = e || window.event;
+        if (e.keyCode === 13) {
+            //alert("Вы нажали Enter!");
             return false;
         }
-    };
-    input.onkeydown = function (e) {
-        if (event.keyCode == 13) {
-            generateTree()
-        }
-    };
+        return false;
+    }*/
 
-    var svg_panel = document.getElementById("svg_panel");
-    var margin = {top: 20, right: 120, bottom: 20, left: 120},
-			width = 1500 - margin.right - margin.left,
-            height = 1500 - margin.top - margin.bottom;
-    var tree = d3.layout.tree()
-            .size([height,width]);
-    var diagonal = d3.svg.diagonal()
-            .projection(function (d) {
-                return [d.x, d.y];
-            });
-    var svg = d3.select("body").select("#svg_panel").select("svg").attr("width", width + margin.right + margin.left)
-            .attr("height", height + margin.top + margin.bottom)
-            .select("g")
-            .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
- var cur_sim = 0;
+
+//input.onsubmit = function(){generateTree();}
+var svg_panel = document.getElementById("svg_panel");
+var margin = {top: 20, right: 120, bottom: 20, left: 120},
+        width = 1500 - margin.right - margin.left,
+        height = 1500 - margin.top - margin.bottom;
+var tree = d3.layout.tree()
+        .size([height,width]);
+var diagonal = d3.svg.diagonal()
+        .projection(function (d) {
+            return [d.x, d.y];
+        });
+var svg = d3.select("body").select("#svg_panel").select("svg").attr("width", width + margin.right + margin.left)
+        .attr("height", height + margin.top + margin.bottom)
+        .select("g")
+        .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+//
+    var cur_sim = 0;
     var i = 0;
     var dataMap;
     var data;
@@ -469,6 +481,8 @@ function page(){
                 };
                 node[0][i].style.cursor ="pointer";// = "cursor: pointer; cursor: hand;";
                 node[0][i].children[0].style.fill = "FF4344";
+                node[0][i].onmouseover = function(){this.children[0].style.stroke="2AF43C";};
+                node[0][i].onmouseout = function(){this.children[0].style.stroke="#f2f444";};
                 operation_nodes.push(node[0][i]);
                 //document.getElementById("error_text").innerHTML = "Ошибка! Непредвиденный символ.";
             };
@@ -502,7 +516,7 @@ function page(){
         if (op == '-') return operands[0]-operands[1];
     }
 }
-var page = page();			
+var page = page();
 </script>
 
 </body>
