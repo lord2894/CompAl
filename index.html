@@ -71,7 +71,9 @@ function page() {
     d3.select("#navigation_panel").select("#generateBtn").attr('onclick', 'generateTree()');
     var input = document.getElementById("racText");
     input.oninput = function () {
-        var re = new RegExp("[^0-9\-\.\+\^\\/\*\(\)]");
+        var re = new RegExp("[^0-9\-\.\+\^\\/\*\(\)\:\,]");
+        var redot = new RegExp(",");
+        var redoubledot = new RegExp(",");
         //var check = input.value + String.fromCharCode(e.charCode);
         var check = input.value;
         var change = true;
@@ -362,6 +364,8 @@ function page() {
         data = [
         ];
         var equalSTR = document.getElementById("racText").value;
+        equalSTR = equalSTR.replace(':','/');
+        equalSTR = equalSTR.replace(',','.');
         equalSTR = polishNotation(equalSTR);
         if (!checkSTRtrubles(equalSTR)) {
             //data.push({"name": equalSTR[equalSTR.length - 1], "parent": "start", "parentID": -1, "nameID": equalSTR.length - 1});
