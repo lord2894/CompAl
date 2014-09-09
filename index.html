@@ -386,30 +386,32 @@ function page() {
             }
             //current_position = equalSTR.length - 1;
             recursiveData(cur_sim, equalSTR);
-            dataMap = data.reduce(function (map, node) {
-                map[node.name + node.nameID] = node;
-                return map;
-            }, {});
-            treeData = [];
-            data.forEach(function (node) {
-                // add to parent
-                var parent = dataMap[node.parent + node.parentID];
-                if (parent) {
-                    // create child array if it doesn't exist
-                    (parent.children || (parent.children = []))
-                        // add node to child array
-                            .push(node);
-                    //root = treeData[0];
-                    //update(root);
-                } else {
-                    // parent is null or missing
-                    treeData.push(node);
-                    //root = treeData[0];
-                    //update(root);
-                }
-            });
-            root = treeData[0];
-            update(root);
+            if (document.getElementById("error_text").innerHTM.search("Ошибка!") == -1) {
+                dataMap = data.reduce(function (map, node) {
+                    map[node.name + node.nameID] = node;
+                    return map;
+                }, {});
+                treeData = [];
+                data.forEach(function (node) {
+                    // add to parent
+                    var parent = dataMap[node.parent + node.parentID];
+                    if (parent) {
+                        // create child array if it doesn't exist
+                        (parent.children || (parent.children = []))
+                            // add node to child array
+                                .push(node);
+                        //root = treeData[0];
+                        //update(root);
+                    } else {
+                        // parent is null or missing
+                        treeData.push(node);
+                        //root = treeData[0];
+                        //update(root);
+                    }
+                });
+                root = treeData[0];
+                update(root);
+            }
         }
         else {
             data = [];
@@ -418,7 +420,7 @@ function page() {
                 //data.push({"name": "Ошибка! Не согласование скобок.", "parent": "start", "parentID": -1, "nameID": 1});
             }
             if (equalSTR[equalSTR.length - 1] == '2') {
-                document.getElementById("error_text").innerHTML = "Ошибка! В выражении присутствует\nлишняя точка(.).";
+                document.getElementById("error_text").innerHTML = "Ошибка! В выражении присутствует лишняя точка(.).";
                 //data.push({"name": "Ошибка! В выражении присутствует\nлишняя точка(.).", "parent": "start", "parentID": -1, "nameID": 2});
             }
             if (equalSTR[equalSTR.length - 1] == '3') {
