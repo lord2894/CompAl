@@ -595,10 +595,21 @@ function page() {  //Добавить возможность переменны�
                 newEl.setAttribute("height","30");
                 newEl.setAttribute("placeholder",node[0][i].textContent);
                 newEl.oninput = function(){setNum(this);};
-                //newEl.setAttribute("text-align","center");
                 newEl.style.display="inline-block";
                 node[0][i].children[2].appendChild(newEl);
                 variables.push(node[0][i]);
+                var tooltip = d3.select("body")
+                        .append("div")
+                        .style("position", "absolute")
+                        .style("z-index", "10")
+                        .style("visibility", "hidden")
+                        .style("background","#000000")
+                        .style("font-size","20px")
+                        .style("border","2px double #5E5E5E")
+                        .text(node[0][i].textContent);
+               node[0][i].onmouseover = function(){return tooltip.style("visibility", "visible");};
+               node[0][i].onmousemove = function(){return tooltip.style("top", (event.pageY-10)+"px").style("left",(event.pageX+10)+"px");};
+               node[0][i].onmouseout = function(){return tooltip.style("visibility", "hidden");};
             }
         }
     }
