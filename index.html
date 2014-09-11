@@ -45,7 +45,7 @@
             Возможность ввода других символов отключена из соображений безопасности.<br>
         </div>
         <div id="ds_area" class="fluid">Узлы операций в построенном дереве интерактивны, при нажатии на один из них появится результат вычисления его поддерева. <br>
-            В данной версии сайта доступен ввод переменных имя переменной должно начинаться с буквы(a-zA-Z) и далее содержать любые символы из данного набора a-z A-Z 0-9 и _..<br>
+            В данной версии сайта доступен ввод переменных, имя переменной должно начинаться с буквы(a-zA-Z) и далее содержать любые символы из данного набора a-z A-Z 0-9 и _.<br>
         </div>
     </hgroup>
 </div>
@@ -117,6 +117,7 @@ function page() {  //Добавить возможность переменны�
     var treeData;
     var operation_nodes = [];
     var variables = [];
+    var tooltips = [];
     document.getElementById("error_text").innerHTM = "";
     checkOperation = function (symbol) {
         symbol = symbol.toString();
@@ -469,6 +470,11 @@ function page() {  //Добавить возможность переменны�
         i = 0;
         operation_nodes = [];
         variables = [];
+        for (var k=0; k<tooltips.length; k++)
+        {
+            tooltips[k].remove();
+        }
+        tooltips = [];
         var node = svg.selectAll("g.node");
         if (node) node.remove();
         var link = svg.selectAll("path.link");
@@ -606,10 +612,23 @@ function page() {  //Добавить возможность переменны�
                         .style("background","#000000")
                         .style("font-size","20px")
                         .style("border","2px double #5E5E5E")
+                        .attr("id","tooltip"+node[0][i].id)
                         .text(node[0][i].textContent);
-               node[0][i].onmouseover = function(){return tooltip.style("visibility", "visible");};
-               node[0][i].onmousemove = function(){return tooltip.style("top", (event.pageY-10)+"px").style("left",(event.pageX+10)+"px");};
-               node[0][i].onmouseout = function(){return tooltip.style("visibility", "hidden");};
+               tooltips.push(tooltip);
+               node[0][i].onmouseover = function(){
+                   var tooltip = document.getElementById("tooltip"+this.id);
+                   return tooltip.style.visibility="visible";
+               };
+               node[0][i].onmousemove = function(){
+                   var tooltip = document.getElementById("tooltip"+this.id);
+                    tooltip.style.top = event.pageY-10+"px";
+                    tooltip.style.left = event.pageX+10+"px";
+                   return;
+               };
+               node[0][i].onmouseout = function(){
+                   var tooltip = document.getElementById("tooltip"+this.id);
+                   return tooltip.style.visibility = "hidden";
+               };
             }
         }
     }
