@@ -28,23 +28,24 @@
     <script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
     <![endif]-->
     <script src="respond.min.js"></script>
+    <script src="jquery-2.1.1.min.js"></script>
 </head>
 <body>
 <script src="http://d3js.org/d3.v3.min.js"></script>
 <div id="header" class="fluid">
     <hgroup id="head" class="fluid">
         <div id="head_text" class="fluid">
-            <header id="header_t" class="fluid">Компьютерная алгебра</header>
+            <header id="header_t" class="fluid">Компьютерная алгебра v2.0 </header>
         </div>
         <div id="description" class="fluid">Данный сервис предназначен для предоставления пользователю возможности
             увидеть любое рациональное выражение (знаки + - * / ) в виде дерева его решения.
         </div>
         <div id="example" class="fluid">Пример входных данных: 4.5-6/(1-2.5)^2-1<br>
-            Внимание! Для ввода доступны только следующие символы: . 0-9 + - * / ^ ( )
+            Внимание! Для ввода доступны только следующие символы: . 0-9 + - * / ^ ( ) a-z A-Z 0-9
             Возможность ввода других символов отключена из соображений безопасности.<br>
         </div>
         <div id="ds_area" class="fluid">Узлы операций в построенном дереве интерактивны, при нажатии на один из них появится результат вычисления его поддерева. <br>
-          По умолчанию доступен результат вычисления всего дерева.<br>
+            По умолчанию доступен результат вычисления всего дерева.<br>
         </div>
     </hgroup>
 </div>
@@ -60,20 +61,19 @@
 </hgroup>
 <div id="svg_panel" class="fluid">
     <svg>
-        <g></g>
+         <g>
+         </g>
     </svg>
 </div>
 <footer id="e-mail_area" class="fluid"><a href="mailto:ivanov.kir.m@yandex.ru"></a>Проект подготовлен Ивановым Кириллом,
     группа 402 ФКН ПМИ НИУ-ВШЭ. Мой адрес электронной почты: <a href="mailto:ivanov.kir.m@yandex.ru">ivanov.kir.m@yandex.ru</a>
 </footer>
 <script>
-function page() {
+function page() {  //Добавить возможность переменных
     d3.select("#navigation_panel").select("#generateBtn").attr('onclick', 'generateTree()');
     var input = document.getElementById("racText");
     input.oninput = function () {
-        var re = new RegExp("[^0-9\-\.\+\^\\/\*\(\)\:\,]");
-        var redot = new RegExp(",");
-        var redoubledot = new RegExp(",");
+        var re = new RegExp("[^0-9\\-\\.\\+\\^\\/\\*\\(\\)\\:\\,A-Za-z_]");
         //var check = input.value + String.fromCharCode(e.charCode);
         var check = input.value;
         var change = true;
@@ -94,17 +94,7 @@ function page() {
             generateTree();
         }
     };
-    /*    document.onkeyup = function (e) {
-     e = e || window.event;
-     if (e.keyCode === 13) {
-     //alert("Вы нажали Enter!");
-     return false;
-     }
-     return false;
-     }*/
 
-
-//input.onsubmit = function(){generateTree();}
     var svg_panel = document.getElementById("svg_panel");
     var margin = {top: 20, right: 120, bottom: 20, left: 120},
             width = 1500 - margin.right - margin.left,
@@ -126,6 +116,7 @@ function page() {
     var data;
     var treeData;
     var operation_nodes = [];
+    var variables = [];
     document.getElementById("error_text").innerHTM = "";
     checkOperation = function (symbol) {
         symbol = symbol.toString();
@@ -171,6 +162,8 @@ function page() {
         var re1 = new RegExp("[\\^\\+\\-\\*\\/]{3,}");
         var re2 = new RegExp("\\-[\\^\\+\\*\\/]{1,}");
         var re3 = new RegExp("[\\^\\+\\*\\/]{2,}");
+        var re4 = new RegExp("[a-zA-Z_]");
+        var re5 = new RegExp("[0-9a-zA-Z_]");
         if (re1.test(equalSTR) || re2.test(equalSTR) || re3.test(equalSTR)) {
             return return_string = "error3";
         }
@@ -198,14 +191,17 @@ function page() {
                             return_string += (current_symbol);
                             current_symbol = equalSTR.charAt(++i);
                         }
+                        if (re4.test(current_symbol)) {
+                            return return_string = "error4";
+                        }
                         i--;
-                    } else if (current_symbol == '0') {
+                    }
+                    else if (current_symbol == '0') {
                         if (i == 0 || i == equalSTR.length - 1) {
                             return_string += '#';
                             return_string += '0';
                             //i--;
                             continue
-
                         }
                         else {
                             current_symbol = equalSTR.charAt(++i);
@@ -219,79 +215,89 @@ function page() {
                                 i--;
                                 continue
                             }
-                            else if (current_symbol == '(' || checkOperation(current_symbol)) {
-                                return_string += '#';
-                                return_string += '0';
-                                i--;
-                                continue
-                            }
+                            /*else if (current_symbol == '(' || checkOperation(current_symbol)) {
+                             return_string += '#';
+                             return_string += '0';
+                             i--;
+                             continue
+                             }*/
                             else return return_string = "error4"
                         }
                     }
                 }
-                else {
-                    if (current_symbol == ')') {
-                        while (stack.length >= 0 && current_symbol != '(') {
-                            current_symbol = stack.pop();
-                            if (current_symbol != '(')
-                                return_string += (current_symbol);
-                        }
-                        if (stack.length == 0 && current_symbol != '(') {
-                            return return_string = "error1";
-                        }
-                    } else if (checkOperation(current_symbol)) {
-                        if (current_symbol == '-') {
-                            if ((i == 0 || (i > 0 && (checkOperation(equalSTR.charAt(i - 1)) || equalSTR.charAt(i - 1) == '(')))
-                                    && (i + 1 < equalSTR.length
-                                            && ((equalSTR.charAt(i + 1) >= '0' && equalSTR.charAt(i + 1) <= '9')
-                                                    || equalSTR.charAt(i + 1) == '.' ))) {
-                                unary_minus = true;
-                                continue;
-                            }
-                            else {
-                                while (checkPriority(current_symbol, stack[stack.length - 1]) <= 0) {
-                                    return_string += (stack.pop());
-                                }
-                            }
+                else if (re4.test(current_symbol)){
+                    return_string += '#';
+                    while (re5.test(current_symbol)) {
+                        return_string += (current_symbol);
+                        current_symbol = equalSTR.charAt(++i);
+                    }
+                    i--;
+                }
+                else if (current_symbol == ')') {
+                    while (stack.length >= 0 && current_symbol != '(') {
+                        current_symbol = stack.pop();
+                        if (current_symbol != '(')
+                            return_string += (current_symbol);
+                    }
+                    if (stack.length == 0 && current_symbol != '(') {
+                        return return_string = "error1";
+                    }
+                }
+                else if (checkOperation(current_symbol)) {
+                    if (current_symbol == '-') {
+                        if ((i == 0 || (i > 0 && (checkOperation(equalSTR.charAt(i - 1)) || equalSTR.charAt(i - 1) == '(')))
+                                && (i + 1 < equalSTR.length
+                                        && ((equalSTR.charAt(i + 1) >= '0' && equalSTR.charAt(i + 1) <= '9')
+                                                || equalSTR.charAt(i + 1) == '.' ))) {
+                            unary_minus = true;
+                            continue;
                         }
                         else {
                             while (checkPriority(current_symbol, stack[stack.length - 1]) <= 0) {
                                 return_string += (stack.pop());
                             }
                         }
-                        stack.push(current_symbol);
-                    } else if (current_symbol == '(') {
-                        stack.push(current_symbol);
                     }
-                    else if (current_symbol == '.') {
-                        current_symbol = equalSTR.charAt(++i);
-                        if ((current_symbol >= '0' && current_symbol <= '9')) {
-                            var cur_num = '#';
-                            if (unary_minus == true) {
-                                unary_minus = false;
-                                cur_num += '-';
-                            }
-                            cur_num += '0';
-                            cur_num += '.';
-                            var dot = true;
-                            while ((current_symbol >= '0' && current_symbol <= '9') || current_symbol == '.') {
-                                if (current_symbol == '.' && dot == true) {
-                                    return return_string = "error2";
-                                }
-                                cur_num += (current_symbol);
-                                current_symbol = equalSTR.charAt(++i);
-                            }
-                            var re0 = new RegExp("^#[0\\.]+$");
-                            if (re0.test(cur_num)) {
-                                cur_num = "#0";
-                            }
-                            return_string = return_string + cur_num;
-                            i--;
-                        } else return return_string = "error4"
+                    else {
+                        while (checkPriority(current_symbol, stack[stack.length - 1]) <= 0) {
+                            return_string += (stack.pop());
+                        }
                     }
-                    else
-                        return return_string = "error4";
+                    stack.push(current_symbol);
                 }
+                else if (current_symbol == '(') {
+                    stack.push(current_symbol);
+                }
+                else if (current_symbol == '.') {
+                    current_symbol = equalSTR.charAt(++i);
+                    if ((current_symbol >= '0' && current_symbol <= '9')) {
+                        var cur_num = '#';
+                        if (unary_minus == true) {
+                            unary_minus = false;
+                            cur_num += '-';
+                        }
+                        cur_num += '0';
+                        cur_num += '.';
+                        var dot = true;
+                        while ((current_symbol >= '0' && current_symbol <= '9') || current_symbol == '.') {
+                            if (current_symbol == '.' && dot == true) {
+                                return return_string = "error2";
+                            }
+                            cur_num += (current_symbol);
+                            current_symbol = equalSTR.charAt(++i);
+                        }
+                        if (re4.test(current_symbol)) {
+                            return return_string = "error4";
+                        }
+                        var re0 = new RegExp("^#[0\\.]+$");
+                        if (re0.test(cur_num)) {
+                            cur_num = "#0";
+                        }
+                        return_string = return_string + cur_num;
+                        i--;
+                    } else return return_string = "error4"
+                }
+                else return return_string = "error4";
             }
             while (stack.length != 0) {
                 var cur = stack.pop()
@@ -304,11 +310,13 @@ function page() {
         }
     }
     recursiveData = function (cur_pos, equalSTR) {
+        var re4 = new RegExp("[a-zA-Z_]");
+        var re5 = new RegExp("[0-9a-zA-Z_]");
         var operands = 0;
         cur_sim = cur_pos - 1;
         if (cur_pos >= 0 && checkBinary(equalSTR[cur_pos])) {
             while (operands != 2) {
-                if (cur_sim >= 0 && equalSTR[cur_sim] >= '0' && equalSTR[cur_sim] <= '9') {
+                   if (cur_sim >= 0 && re5.test(equalSTR[cur_sim])) {
                     var k = 0;
                     var numSTR = "";
                     while (cur_sim - k >= 0 && equalSTR[cur_sim - k] != '#') {
@@ -364,25 +372,25 @@ function page() {
         data = [
         ];
         var equalSTR = document.getElementById("racText").value;
-        var re = new RegExp("([0-9]\\()");
-        while(equalSTR.search(re) != -1)
-        {
-          var ix =equalSTR.search(re);
-          equalSTR = equalSTR.substr(0,ix+1)+"*"+equalSTR.substr(ix+1);
-        };
-        re = new RegExp("(\\)[0-9])");
+        var re = new RegExp("([0-9a-zA-Z_]\\()");
         while(equalSTR.search(re) != -1)
         {
             var ix =equalSTR.search(re);
             equalSTR = equalSTR.substr(0,ix+1)+"*"+equalSTR.substr(ix+1);
         };
-        re = new RegExp("\:");
+        re = new RegExp("(\\)[0-9a-zA-Z_])");
+        while(equalSTR.search(re) != -1)
+        {
+            var ix =equalSTR.search(re);
+            equalSTR = equalSTR.substr(0,ix+1)+"*"+equalSTR.substr(ix+1);
+        };
+        re = new RegExp("\\:");
         while(equalSTR.search(re) != -1)
         {
             var ix =equalSTR.search(re);
             equalSTR=equalSTR.substr(0,ix)+"/"+equalSTR.substr(ix+1);
         };
-        re = new RegExp("\,");
+        re = new RegExp("\\,");
         while(equalSTR.search(re) != -1)
         {
             var ix =equalSTR.search(re);
@@ -391,9 +399,10 @@ function page() {
         //equalSTR = equalSTR re
         equalSTR = polishNotation(equalSTR);
         if (!checkSTRtrubles(equalSTR)) {
+            var regVar = new RegExp("[0-9A-Za-z_]");
             //data.push({"name": equalSTR[equalSTR.length - 1], "parent": "start", "parentID": -1, "nameID": equalSTR.length - 1});
             cur_sim = equalSTR.length - 1
-            if (cur_sim >= 0 && equalSTR[cur_sim] >= '0' && equalSTR[cur_sim] <= '9') {
+            if (cur_sim >= 0 && regVar.test(equalSTR[cur_sim])) {
                 var k = 0;
                 var numSTR = "";
                 while (cur_sim - k >= 0 && equalSTR[cur_sim - k] != '#') {
@@ -458,6 +467,8 @@ function page() {
     }
     clearPage = function () {
         i = 0;
+        operation_nodes = [];
+        variables = [];
         var node = svg.selectAll("g.node");
         if (node) node.remove();
         var link = svg.selectAll("path.link");
@@ -494,7 +505,7 @@ function page() {
         nodeEnter.append("circle")
                 .attr("r", 10);
 
-        nodeEnter.append("text")
+       nodeEnter.append("text")
                 .attr("x", function (d) {
                     return d.children || d._children ? -13 : 13;
                 })
@@ -506,6 +517,20 @@ function page() {
                     return d.name;
                 })
                 .style("fill-opacity", 1);
+
+        /*nodeEnter.append("foreignObject")
+                .attr("x", function (d) {
+                    return d.children || d._children ? -13 : 13;
+                })
+                .attr("dy", ".35em")
+                .attr("width","100")
+                .attr("height","30")
+                .append("xhtml:input")
+                .attr("class","inputtext")
+                .attr("type","text")
+                .attr("width","100")
+                .attr("height","30");
+                //.attr("display","block");*/
 
         // Declare the links…
         var link = svg.selectAll("path.link")
@@ -521,15 +546,19 @@ function page() {
                 })
                 .attr("d", diagonal);
 
-        SetOnClick();
-        operation_nodes[operation_nodes.length - 1].onclick();
+        SetOnClick(source);
+        if (variables.length == 0)
+            operation_nodes[operation_nodes.length - 1].onclick();
     }
-    SetOnClick = function () {
+    SetOnClick = function (source) {
         data = data.reverse();
+        var nodes = tree.nodes(root).reverse();
         var node = svg.selectAll("g.node");
-        //var link = svg.selectAll("path.link");
-        //var nodeEnter = node.selectAll("g");
-        //var texts = nodeEnter.selectAll("text");
+        var nodeEnter = svg.selectAll("g.node")
+                .data(nodes, function (d) {
+                    return d.id || (d.id = ++i);
+                }).enter();
+        var regVar = new RegExp("[A-Za-z_]{1}[A-Za-z0-9_]*");
         for (var i = 0; i < node[0].length; i++) {
             if (checkOperation(node[0][i].textContent)) {
                 node[0][i].onclick = function () {
@@ -538,9 +567,9 @@ function page() {
                         if (operation_nodes[k] != this)
                             operation_nodes[k].children[0].style.fill = "FF4344";
                     }
-                    NodeOnClick(this)
+                    NodeOnClick(this);
                 };
-                node[0][i].style.cursor = "pointer";// = "cursor: pointer; cursor: hand;";
+                node[0][i].style.cursor = "pointer";
                 node[0][i].children[0].style.fill = "FF4344";
                 node[0][i].onmouseover = function () {
                     this.children[0].style.stroke = "2AF43C";
@@ -549,18 +578,59 @@ function page() {
                     this.children[0].style.stroke = "#f2f444";
                 };
                 operation_nodes.push(node[0][i]);
-                //document.getElementById("error_text").innerHTML = "Ошибка! Непредвиденный символ.";
             }
-            ;
+            else if (regVar.test(node[0][i].textContent)){
+                var index = parseInt(node[0][i].id) - 1;
+                node[0][i].children[1].style.display = "none";
+                var newElement = document.createElementNS("http://www.w3.org/2000/svg", 'foreignObject');
+                newElement.setAttribute("x",data[index].x > data[data.length-1].x ? -113 : 13);
+                newElement.setAttribute("dy",".35em");
+                newElement.setAttribute("width","100");
+                newElement.setAttribute("height","30");
+                node[0][i].appendChild(newElement);
+                var newEl = document.createElement("input");
+                newEl.setAttribute("class","inputtext");
+                newEl.setAttribute("type","text");
+                newEl.setAttribute("width","100");
+                newEl.setAttribute("height","30");
+                newEl.setAttribute("placeholder",node[0][i].textContent);
+                newEl.oninput = function(){setNum(this);};
+                //newEl.setAttribute("text-align","center");
+                newEl.style.display="inline-block";
+                node[0][i].children[2].appendChild(newEl);
+                variables.push(node[0][i]);
+            }
         }
     }
     NodeOnClick = function (node) {
         var index = parseInt(node.id) - 1;
+        var regVar = new RegExp("[A-Za-z_]{1}[A-Za-z0-9_]*");
         if (checkBinary(node.textContent)) {
             var operands = [];
             for (var i = data[index].children.length - 1; i >= 0; i--) {
                 if (parseFloat(data[index].children[i].name)) {
                     operands.push(parseFloat(data[index].children[i].name));
+                }
+                else if (regVar.test(data[index].children[i].name)) {
+                    var idnode = parseInt(data[index].children[i].id) - 1;
+                    var varNode = svg.selectAll("g.node")[0][idnode];
+                    var num = varNode.children[2].children[0].value;
+                    var re0 = new RegExp("^[0\\.]{1}0*$");
+                    if (re0.test(num)) {
+                        operands.push(0);
+                    }
+                    else {
+                        var regFloat1 = new RegExp("^[1-9][0-9]*\\.[0-9]*[1-9]+$");
+                        var regFloat2 = new RegExp("^\\.[0-9]*[1-9]+$")
+                        var regInt = new RegExp("^[1-9][0-9]*$");
+                        if (regInt.test(num) || regFloat1.test(num) || regFloat2.test(num)) {
+                            operands.push(parseFloat(num));
+                        }
+                        else {
+                            document.getElementById("error_text").innerHTML = "Ошибка! Значение переменной " + data[index].children[i].name+" = "+ num +" не является числом.";
+                            return undefined;
+                        }
+                    }
                 }
                 else if (data[index].children[i].name == "0") {
                     operands.push(0);
@@ -568,7 +638,7 @@ function page() {
                 else {
                     var idnode = parseInt(data[index].children[i].id) - 1;
                     var new_oper = NodeOnClick(svg.selectAll("g.node")[0][idnode]);
-                    if (new_oper != undefined)
+                    if (new_oper != undefined )
                         operands.push(new_oper);
                     else
                         return undefined;
@@ -589,12 +659,39 @@ function page() {
         if (op == '/') {
             if (operands[1] != 0) return operands[0] / operands[1];
             else {
-                clearPage();
+                //clearPage();
                 document.getElementById("error_text").innerHTML = "Ошибка! В выражении присутствут деление на 0.";
             }
         }
         if (op == '+') return operands[0] + operands[1];
         if (op == '-') return operands[0] - operands[1];
+    };
+    setNum = function (input) {
+        var check = input.value;
+        var re = new RegExp("\\,");
+        while (check.search(re) != -1) {
+            var ix = check.search(re);
+            check = check.substr(0, ix) + "." + check.substr(ix + 1);
+        }
+
+        var re = new RegExp("[^0-9\\.]");
+        var change = true;
+        if (re.test(check)) {
+            while (change) {
+                var length = check.length;
+                check = check.replace(re, '');
+                if (length == check.length)
+                    change = false;
+            }
+            //input.value = check;
+            //return false;
+        }
+         input.value = check;
+       for (var k = 0; k<variables.length; k++){
+           if (variables[k] != input.parentNode.parentNode && input.parentNode.parentNode.textContent == variables[k].textContent){
+               variables[k].children[2].children[0].value = check;
+           }
+       }
     }
 }
 var page = page();
