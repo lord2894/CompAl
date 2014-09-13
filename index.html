@@ -228,6 +228,10 @@ function page() {  //Добавить возможность переменны�
                 }
                 else if (re4.test(current_symbol)){
                     return_string += '#';
+                    if (unary_minus == true) {
+                        return_string += '-';
+                        unary_minus = false;
+                    }
                     while (re5.test(current_symbol)) {
                         return_string += (current_symbol);
                         current_symbol = equalSTR.charAt(++i);
@@ -245,10 +249,11 @@ function page() {  //Добавить возможность переменны�
                     }
                 }
                 else if (checkOperation(current_symbol)) {
+                    var re = new RegExp("[0-9a-zA-Z_]");
                     if (current_symbol == '-') {
                         if ((i == 0 || (i > 0 && (checkOperation(equalSTR.charAt(i - 1)) || equalSTR.charAt(i - 1) == '(')))
                                 && (i + 1 < equalSTR.length
-                                        && ((equalSTR.charAt(i + 1) >= '0' && equalSTR.charAt(i + 1) <= '9')
+                                        && ((re.test(equalSTR.charAt(i+1)))
                                                 || equalSTR.charAt(i + 1) == '.' ))) {
                             unary_minus = true;
                             continue;
@@ -564,7 +569,7 @@ function page() {  //Добавить возможность переменны�
                 .data(nodes, function (d) {
                     return d.id || (d.id = ++i);
                 }).enter();
-        var regVar = new RegExp("[A-Za-z_]{1}[A-Za-z0-9_]*");
+        var regVar = new RegExp("\\-?[A-Za-z_]{1}[A-Za-z0-9_]*");
         for (var i = 0; i < node[0].length; i++) {
             if (checkOperation(node[0][i].textContent)) {
                 node[0][i].onclick = function () {
@@ -586,6 +591,7 @@ function page() {  //Добавить возможность переменны�
                 operation_nodes.push(node[0][i]);
             }
             else if (regVar.test(node[0][i].textContent)){
+                var varText=node[0][i].textContent;
                 var index = parseInt(node[0][i].id) - 1;
                 node[0][i].children[1].style.display = "none";
                 var newElement = document.createElementNS("http://www.w3.org/2000/svg", 'foreignObject');
@@ -599,7 +605,7 @@ function page() {  //Добавить возможность переменны�
                 newEl.setAttribute("type","text");
                 newEl.setAttribute("width","100");
                 newEl.setAttribute("height","30");
-                newEl.setAttribute("placeholder",node[0][i].textContent);
+                newEl.setAttribute("placeholder",varText);
                 newEl.oninput = function(){setNum(this);};
                 newEl.style.display="inline-block";
                 node[0][i].children[2].appendChild(newEl);
@@ -613,7 +619,7 @@ function page() {  //Добавить возможность переменны�
                         .style("font-size","20px")
                         .style("border","2px double #5E5E5E")
                         .attr("id","tooltip"+node[0][i].id)
-                        .text(node[0][i].textContent);
+                        .text(varText);
                tooltips.push(tooltip);
                node[0][i].onmouseover = function(){
                    var tooltip = document.getElementById("tooltip"+this.id);
@@ -650,11 +656,16 @@ function page() {  //Добавить возможность переменны�
                         operands.push(0);
                     }
                     else {
-                        var regFloat1 = new RegExp("^[1-9][0-9]*\\.[0-9]*[1-9]+$");
-                        var regFloat2 = new RegExp("^\\.[0-9]*[1-9]+$")
-                        var regInt = new RegExp("^[1-9][0-9]*$");
+                        var regFloat1 = new RegExp("^\\-?[1-9][0-9]*\\.[0-9]*[1-9]+$");
+                        var regFloat2 = new RegExp("^\\-?\\.[0-9]*[1-9]+$")
+                        var regInt = new RegExp("^\\-?[1-9][0-9]*$");
                         if (regInt.test(num) || regFloat1.test(num) || regFloat2.test(num)) {
-                            operands.push(parseFloat(num));
+                            var o = parseFloat(num);
+                            if (varNode.textContent[0]=='-')
+                                    o=-1*o;
+                            //if (num[0]='-')
+                            //        o=-1*o;
+                            operands.push(o);
                         }
                         else {
                             document.getElementById("error_text").innerHTML = "Ошибка! Значение переменной " + data[index].children[i].name+" = "+ num +" не является числом.";
@@ -704,7 +715,7 @@ function page() {  //Добавить возможность переменны�
             check = check.substr(0, ix) + "." + check.substr(ix + 1);
         }
 
-        var re = new RegExp("[^0-9\\.]");
+        var re = new RegExp("[^-0-9\\.]");
         var change = true;
         if (re.test(check)) {
             while (change) {
@@ -717,8 +728,14 @@ function page() {  //Добавить возможность переменны�
             //return false;
         }
          input.value = check;
+        var name1=  input.parentNode.parentNode.textContent;
+        if (name1[0] == '-')
+            name1 = name1.substr(1);
        for (var k = 0; k<variables.length; k++){
-           if (variables[k] != input.parentNode.parentNode && input.parentNode.parentNode.textContent == variables[k].textContent){
+           var name2 =  variables[k].textContent;
+           if (name2[0] == '-')
+               name2 = name2.substr(1);
+           if (variables[k] != input.parentNode.parentNode && name1 == name2){
                variables[k].children[2].children[0].value = check;
            }
        }
