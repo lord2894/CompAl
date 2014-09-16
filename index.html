@@ -317,7 +317,7 @@ function page() {  //Добавить возможность переменны�
     }
     recursiveData = function (cur_pos, equalSTR) {
         var re4 = new RegExp("[a-zA-Z_]");
-        var re5 = new RegExp("[0-9a-zA-Z_]");
+        var re5 = new RegExp("[0-9a-zA-Z_\\.]");
         var operands = 0;
         cur_sim = cur_pos - 1;
         if (cur_pos >= 0 && checkBinary(equalSTR[cur_pos])) {
@@ -405,7 +405,7 @@ function page() {  //Добавить возможность переменны�
         //equalSTR = equalSTR re
         equalSTR = polishNotation(equalSTR);
         if (!checkSTRtrubles(equalSTR)) {
-            var regVar = new RegExp("[0-9A-Za-z_]");
+            var regVar = new RegExp("[0-9A-Za-z_\\.]");
             //data.push({"name": equalSTR[equalSTR.length - 1], "parent": "start", "parentID": -1, "nameID": equalSTR.length - 1});
             cur_sim = equalSTR.length - 1
             if (cur_sim >= 0 && regVar.test(equalSTR[cur_sim])) {
