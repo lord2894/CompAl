@@ -594,9 +594,12 @@ function page() {  //Добавить возможность переменны�
                 var varText=node[0][i].textContent;
                 var index = parseInt(node[0][i].id) - 1;
                 node[0][i].children[1].style.display = "none";
+                //node[0][i].children[0].style.display = "none";
                 var newElement = document.createElementNS("http://www.w3.org/2000/svg", 'foreignObject');
-                newElement.setAttribute("x",data[index].x > data[data.length-1].x ? -113 : 13);
-                newElement.setAttribute("dy",".35em");
+                //newElement.setAttribute("x",data[index].x > data[data.length-1].x ? -113 : 13);
+                newElement.setAttribute("x",-50);
+                //newElement.setAttribute("dy",".35em");
+                newElement.setAttribute("y",13);
                 newElement.setAttribute("width","100");
                 newElement.setAttribute("height","30");
                 node[0][i].appendChild(newElement);
