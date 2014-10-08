@@ -6,7 +6,15 @@ var margin = {top: 20, right: 120, bottom: 20, left: 120},
     height = 1500 - margin.top - margin.bottom;
 
 function page(){
-    d3.select("#navigation_panel").select("#generateBtn").attr('onclick', 'generateTree()');
+    //d3.select("#navigation_panel").select("#generateBtn").attr('onclick', 'generateTree()');
+    var genBTN = document.getElementById("generateBtn");
+        genBTN.onclick = generateTree;
+    var historyBTN = document.getElementById("historyBtn");
+        historyBTN.onclick = function(){
+            var link = 'http://computeralgebra.ru/PHP/load.php';
+            window.open(link, 'targetWindow', "status=no, menubar=no, scrollbars=yes, resizable=yes, height = 200, width = 400, left = 500, top = 300");//Круто!
+            //window.location.href = link;
+        };
     var input = document.getElementById("racText");
     input.oninput = function () {
         var re = new RegExp("[^0-9\\-\\.\\+\\^\\/\\*\\(\\)\\:\\,A-Za-z_]");

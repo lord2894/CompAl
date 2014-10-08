@@ -6,6 +6,7 @@ function generateTree() {
         dataMap,
         data,
         treeData;
+
     checkOperation = function (symbol) {
         symbol = symbol.toString();
         regexp = new RegExp("^[\\^\\+\\-\\*\\/]+$");
@@ -255,6 +256,47 @@ function generateTree() {
     clearPage();
     data = [];
     var equalSTR = document.getElementById("racText").value;
+    //var link = 'http://computeralgebra.ru/PHP/save.php?request="'+equalSTR+'"';//http://localhost:63343/CompAl/
+    //var link = 'http://localhost:63343/CompAl/PHP/save.php?request="'+equalSTR+'"';
+    //window.location.href = link;
+
+
+    var httpRequest;
+    if (window.XMLHttpRequest) { // Mozilla, Safari, ...
+        httpRequest = new XMLHttpRequest();
+        if (httpRequest.overrideMimeType) {
+            httpRequest.overrideMimeType('text/xml');
+            // See note below about this line
+        }
+    }
+    else if (window.ActiveXObject) { // IE
+        try {
+            httpRequest = new ActiveXObject("Msxml2.XMLHTTP");
+        }
+        catch (e) {
+            try {
+                httpRequest = new ActiveXObject("Microsoft.XMLHTTP");
+            }
+            catch (e) {}
+        }
+    }
+    var url = 'http://localhost:63343/CompAl/PHP/save.php';
+    //var url = 'http://computeralgebra.ru/PHP/save.php';
+    httpRequest.onreadystatechange = function() {
+        if (httpRequest.readyState == 4) {
+            if (httpRequest.status == 200) {
+                //alert(httpRequest.responseText);
+            } else {
+                alert('There was a problem with the request.status = '+httpRequest.status);
+            }
+        }
+    };
+    httpRequest.open('POST', url, true);
+    httpRequest.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+    httpRequest.send("request=" + encodeURIComponent(equalSTR)); // Отправляем POST-запрос
+    //httpRequest.send();
+
+
     var re = new RegExp("([0-9a-zA-Z_]\\()");
     while (equalSTR.search(re) != -1) {
         var ix = equalSTR.search(re);
